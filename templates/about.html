@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}About AyurHerb – Project Overview & Methodology{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <div class="pb-3 border-bottom">
+    <div class="d-inline-flex align-items-center gap-1 badge bg-success-subtle text-success border border-success-subtle mb-2 px-3 py-1">
+      <i class="bi bi-mortarboard-fill"></i> Data Science using Python Lab Mini-Project
+    </div>
+    <h1 class="fw-bold text-success mb-1">About AyurHerb</h1>
+    <p class="text-secondary fs-6 mb-0">
+      A Data-Driven Ayurvedic Wellness Recommendation System bridging classical herbal formulations with modern machine learning text analytics.
+    </p>
+  </div>
+</div>
+
+<!-- Prominent Academic & Medical Notice -->
+<div class="alert alert-warning border-warning-subtle d-flex gap-3 align-items-start mb-4 shadow-sm">
+  <i class="bi bi-shield-exclamation text-warning fs-3 mt-1 flex-shrink-0"></i>
+  <div>
+    <h5 class="fw-bold text-dark mb-1">Educational Scope & Mandatory Medical Disclaimer</h5>
+    <p class="small text-dark mb-0">
+      <strong>The application is intended for educational and informational purposes and should not be used as a substitute for professional medical advice, diagnosis, or clinical prescription.</strong>
+      AyurHerb does not claim to diagnose diseases or guarantee medical cures. All recommendations reflect historical and traditional wellness literature cataloged in the AyurGenixAI dataset.
+    </p>
+  </div>
+</div>
+
+<div class="row g-4">
+  
+  <!-- Main Narrative Column -->
+  <div class="col-lg-8">
+    
+    <!-- 1. Project Objective -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h4 class="fw-bold text-success mb-3">
+        <i class="bi bi-bullseye me-2"></i> 1. Project Objective & Problem Statement
+      </h4>
+      <p class="text-secondary small mb-3">
+        Ayurveda is one of the world's oldest holistic healing systems, emphasizing balance among mind, body, and the three biological humors (Doshas: Vata, Pitta, and Kapha). However, navigating traditional Ayurvedic dravyas (herbs), formulations, pathya (dietary rules), and lifestyle guidance based on symptoms is complex.
+      </p>
+      <p class="text-secondary small mb-0">
+        <strong>AyurHerb</strong> addresses this challenge by applying <strong>Natural Language Processing (NLP)</strong> and <strong>Information Retrieval</strong> techniques on a curated clinical dataset (AyurGenixAI), allowing users to input everyday symptom descriptions and discover historically relevant Ayurvedic herbs, home remedies, and lifestyle routines.
+      </p>
+    </div>
+
+    <!-- 2. Dataset Description -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h4 class="fw-bold text-success mb-3">
+        <i class="bi bi-database me-2"></i> 2. The AyurGenixAI Dataset
+      </h4>
+      <p class="text-secondary small mb-3">
+        The application is powered by the comprehensive <strong>AyurGenixAI_Dataset.csv</strong> dataset containing <strong>{{ metrics.total_records }} records</strong> across <strong>34 clinical and Ayurvedic attributes</strong>:
+      </p>
+      
+      <div class="row g-2 small text-secondary mb-3">
+        <div class="col-md-6">
+          <ul class="list-unstyled mb-0 d-flex flex-column gap-1">
+            <li><i class="bi bi-check2-circle text-success me-1"></i> Disease (English Name)</li>
+            <li><i class="bi bi-check2-circle text-success me-1"></i> Hindi Name (हिंदी) & Marathi Name (मराठी)</li>
+            <li><i class="bi bi-check2-circle text-success me-1"></i> Clinical Symptoms & Severity</li>
+            <li><i class="bi bi-check2-circle text-success me-1"></i> Ayurvedic Herbs & Single Dravyas</li>
+            <li><i class="bi bi-check2-circle text-success me-1"></i> Traditional Formulations (Kalpana)</li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <ul class="list-unstyled mb-0 d-flex flex-column gap-1">
+            <li><i class="bi bi-check2-circle text-success me-1"></i> Doshas (Vata, Pitta, Kapha)</li>
+            <li><i class="bi bi-check2-circle text-success me-1"></i> Diet & Lifestyle Recommendations</li>
+            <li><i class="bi bi-check2-circle text-success me-1"></i> Yoga Asanas & Physical Therapy</li>
+            <li><i class="bi bi-check2-circle text-success me-1"></i> Seasonal Variation (Ritucharya)</li>
+            <li><i class="bi bi-check2-circle text-success me-1"></i> Medical Interventions & Precautions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Preprocessing & NLP Recommendation Engine -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h4 class="fw-bold text-success mb-3">
+        <i class="bi bi-gear-wide-connected me-2"></i> 3. NLP Recommendation Algorithm
+      </h4>
+      <p class="text-secondary small mb-3">
+        The recommendation engine uses a fully self-contained machine learning pipeline implemented via <strong>Scikit-learn</strong> without reliance on external commercial AI APIs:
+      </p>
+
+      <div class="p-3 bg-light rounded-3 border mb-3">
+        <h6 class="fw-bold text-dark mb-1">A. Text Preprocessing & Cleaning (<code>preprocess.py</code>)</h6>
+        <p class="small text-secondary mb-0">
+          Raw text undergoes lowercasing, punctuation stripping, whitespace normalization, and composite feature synthesis. Missing values are filled with domain-appropriate fallbacks.
+        </p>
+      </div>
+
+      <div class="p-3 bg-light rounded-3 border mb-3">
+        <h6 class="fw-bold text-dark mb-1">B. TF-IDF Vectorization (Term Frequency - Inverse Document Frequency)</h6>
+        <p class="small text-secondary mb-2">
+          TF-IDF converts text documents and user symptom queries into high-dimensional numerical vectors, penalizing overly frequent generic words while rewarding clinically distinguishing symptom terms.
+        </p>
+        <div class="p-2 bg-white rounded border font-monospace text-dark small">
+          \(\text{TF-IDF}(t, d, D) = \text{TF}(t, d) \times \log\left(\frac{1 + |D|}{1 + \text{DF}(t, D)}\right) + 1\)
+        </div>
+      </div>
+
+      <div class="p-3 bg-light rounded-3 border">
+        <h6 class="fw-bold text-dark mb-1">C. Cosine Similarity Scoring & Thresholding</h6>
+        <p class="small text-secondary mb-2">
+          Measures the cosine of the angle between the user query vector \(\vec{u}\) and dataset symptom vector \(\vec{v}\):
+        </p>
+        <div class="p-2 bg-white rounded border font-monospace text-dark small mb-2">
+          \(\text{Cosine Similarity}(\vec{u}, \vec{v}) = \frac{\vec{u} \cdot \vec{v}}{\|\vec{u}\| \|\vec{v}\|} = \frac{\sum_{i=1}^n u_i v_i}{\sqrt{\sum_{i=1}^n u_i^2} \sqrt{\sum_{i=1}^n v_i^2}}\)
+        </div>
+        <p class="small text-secondary mb-0">
+          Matches above the configurable threshold (<strong>&ge; 12-15%</strong>) are ranked and returned with transparent <em>Symptom Similarity Scores</em>.
+        </p>
+      </div>
+    </div>
+
+    <!-- 4. Safety & Triage Filter -->
+    <div class="ayur-card p-4 bg-white shadow-sm">
+      <h4 class="fw-bold text-danger mb-3">
+        <i class="bi bi-shield-fill-check me-2"></i> 4. Clinical Safety & Emergency Triage (<code>safety.py</code>)
+      </h4>
+      <p class="text-secondary small mb-2">
+        To prevent misuse during medical emergencies, AyurHerb runs a high-priority safety evaluation on all user queries prior to vector matching. If symptoms indicating severe difficulty breathing, crushing chest pain, convulsions, or severe hemorrhage are detected, standard herbal recommendations are withheld and the user is redirected to emergency clinical services.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Right Column: Tech Stack & System Architecture -->
+  <div class="col-lg-4">
+    
+    <!-- Technology Stack Card -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h5 class="fw-bold text-dark mb-3">
+        <i class="bi bi-stack text-primary me-2"></i> Technology Stack
+      </h5>
+      <ul class="list-group list-group-flush small">
+        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+          <span class="text-muted">Core Language:</span>
+          <span class="fw-bold">Python 3.x</span>
+        </li>
+        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+          <span class="text-muted">Web Framework:</span>
+          <span class="fw-bold">Flask (Jinja2)</span>
+        </li>
+        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+          <span class="text-muted">Data Manipulation:</span>
+          <span class="fw-bold">Pandas, NumPy</span>
+        </li>
+        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+          <span class="text-muted">Machine Learning / NLP:</span>
+          <span class="fw-bold">Scikit-learn</span>
+        </li>
+        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+          <span class="text-muted">Data Visualization:</span>
+          <span class="fw-bold">Matplotlib, Seaborn</span>
+        </li>
+        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+          <span class="text-muted">Database:</span>
+          <span class="fw-bold">SQLite 3</span>
+        </li>
+        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+          <span class="text-muted">Frontend UI:</span>
+          <span class="fw-bold">Bootstrap 5, CSS3, JS</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Project Architecture -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h5 class="fw-bold text-dark mb-3">
+        <i class="bi bi-diagram-3-fill text-success me-2"></i> Pipeline Architecture
+      </h5>
+      <div class="small text-secondary d-flex flex-column gap-2">
+        <div class="p-2 bg-light rounded border">
+          <strong class="text-success d-block">1. Data Ingestion</strong>
+          <code>AyurGenixAI_Dataset.csv</code>
+        </div>
+        <div class="p-2 bg-light rounded border">
+          <strong class="text-success d-block">2. Preprocessing & EDA</strong>
+          <code>preprocess.py</code> & <code>eda.py</code>
+        </div>
+        <div class="p-2 bg-light rounded border">
+          <strong class="text-success d-block">3. TF-IDF & Cosine Math</strong>
+          <code>recommendation_engine.py</code>
+        </div>
+        <div class="p-2 bg-light rounded border">
+          <strong class="text-danger d-block">4. Emergency Triage</strong>
+          <code>safety.py</code>
+        </div>
+        <div class="p-2 bg-light rounded border">
+          <strong class="text-primary d-block">5. Presentation Layer</strong>
+          Flask Web Server (<code>app.py</code>)
+        </div>
+      </div>
+    </div>
+
+    <!-- Academic Notice -->
+    <div class="p-3 bg-light rounded-3 border text-center">
+      <i class="bi bi-award text-success fs-3 mb-2 d-block"></i>
+      <h6 class="fw-bold text-dark mb-1">Academic Lab Mini-Project</h6>
+      <p class="small text-muted mb-0">
+        Created for the <strong>Data Science using Python Lab</strong> curriculum. Demonstrates end-to-end data engineering, NLP modeling, and web delivery.
+      </p>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

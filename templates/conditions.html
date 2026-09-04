@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Condition & Disease Directory – AyurHerb{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
+    <div>
+      <h2 class="fw-bold text-success mb-1">
+        <i class="bi bi-journal-medical me-2"></i> Condition & Disease Explorer (Roga Nidana)
+      </h2>
+      <p class="text-secondary small mb-0">
+        Directory of all health conditions cataloged in the AyurGenixAI dataset with multilingual names and Ayurvedic classifications.
+      </p>
+    </div>
+    <div>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fs-6">
+        {{ conditions|length }} of {{ total_count }} Conditions
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filter Controls -->
+<div class="ayur-card p-3 p-md-4 mb-4 bg-white shadow-sm">
+  <form method="GET" action="{{ url_for('conditions_explorer') }}" class="row g-3 align-items-center">
+    <div class="col-md-5">
+      <div class="input-group">
+        <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
+        <input
+          type="text"
+          class="form-control"
+          name="q"
+          value="{{ search_query }}"
+          placeholder="Search by English, Hindi (हिंदी), Marathi (मराठी) or symptom keyword..."
+        >
+      </div>
+    </div>
+    <div class="col-md-3">
+      <select name="severity" class="form-select">
+        <option value="">All Severity Levels</option>
+        <option value="mild" {% if selected_severity == 'mild' %}selected{% endif %}>Mild</option>
+        <option value="moderate" {% if selected_severity == 'moderate' %}selected{% endif %}>Moderate</option>
+        <option value="high" {% if selected_severity == 'high' %}selected{% endif %}>High</option>
+        <option value="severe" {% if selected_severity == 'severe' %}selected{% endif %}>Severe</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="dosha" class="form-select">
+        <option value="">All Doshas</option>
+        <option value="vata" {% if selected_dosha == 'vata' %}selected{% endif %}>Vata</option>
+        <option value="pitta" {% if selected_dosha == 'pitta' %}selected{% endif %}>Pitta</option>
+        <option value="kapha" {% if selected_dosha == 'kapha' %}selected{% endif %}>Kapha</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-ayur-primary w-100">
+        Filter
+      </button>
+      {% if search_query or selected_severity or selected_dosha %}
+        <a href="{{ url_for('conditions_explorer') }}" class="btn btn-outline-secondary" title="Reset Filters">
+          <i class="bi bi-x-lg"></i>
+        </a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Conditions List / Table -->
+{% if conditions %}
+  <div class="ayur-card bg-white shadow-sm overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 25%;">Condition Name</th>
+            <th style="width: 18%;">Multilingual (Hindi / Marathi)</th>
+            <th style="width: 25%;">Documented Symptoms</th>
+            <th style="width: 12%;">Severity</th>
+            <th style="width: 10%;">Doshas</th>
+            <th style="width: 10%; text-align: center;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cond in conditions %}
+            <tr>
+              <td>
+                <a href="{{ url_for('condition_detail', condition_name=cond.disease) }}" class="fw-bold text-success text-decoration-none">
+                  {{ cond.disease }}
+                </a>
+                <div class="small text-muted">Season: {{ cond.season }}</div>
+              </td>
+              <td>
+                {% if cond.hindi_name and cond.hindi_name != 'N/A' %}
+                  <div class="small"><strong>हिं:</strong> {{ cond.hindi_name }}</div>
+                {% endif %}
+                {% if cond.marathi_name and cond.marathi_name != 'N/A' %}
+                  <div class="small text-secondary"><strong>म:</strong> {{ cond.marathi_name }}</div>
+                {% endif %}
+              </td>
+              <td>
+                <div class="small text-secondary text-truncate" style="max-width: 280px;" title="{{ cond.symptoms }}">
+                  {{ cond.symptoms }}
+                </div>
+                <div class="small text-muted mt-1">
+                  <i class="bi bi-tree me-1"></i> {{ cond.herbs }}
+                </div>
+              </td>
+              <td>
+                <span class="badge-severity small">{{ cond.severity }}</span>
+              </td>
+              <td>
+                <span class="badge-dosha small">{{ cond.doshas }}</span>
+              </td>
+              <td class="text-center">
+                <a href="{{ url_for('condition_detail', condition_name=cond.disease) }}" class="btn btn-sm btn-outline-success">
+                  View <i class="bi bi-arrow-right"></i>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="ayur-card p-5 text-center bg-white shadow-sm">
+    <i class="bi bi-journal-x text-muted fs-1 mb-3 d-block"></i>
+    <h5 class="fw-bold text-dark">No Matching Conditions Found</h5>
+    <p class="text-muted small">Try modifying your search keywords or resetting the severity and dosha filters.</p>
+    <a href="{{ url_for('conditions_explorer') }}" class="btn btn-sm btn-ayur-primary">Reset Filter</a>
+  </div>
+{% endif %}
+{% endblock %}

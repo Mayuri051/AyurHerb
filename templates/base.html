@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AyurHerb – Ayurvedic Wellness Recommendation System{% endblock %}</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-ayur sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('index') }}">
+        <i class="bi bi-flower1 text-success fs-3"></i>
+        <span>AYURHERB</span>
+        <span class="brand-badge">Data Science Mini-Project</span>
+      </a>
+      
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#ayurNav" aria-controls="ayurNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="ayurNav">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-1">
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+              <i class="bi bi-house-door me-1"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint in ['symptom_checker', 'analyze_symptoms'] %}active{% endif %}" href="{{ url_for('symptom_checker') }}">
+              <i class="bi bi-heart-pulse me-1"></i> Symptom Checker
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint in ['herbs_explorer', 'herb_detail'] %}active{% endif %}" href="{{ url_for('herbs_explorer') }}">
+              <i class="bi bi-tree me-1"></i> Herb Explorer
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint in ['conditions_explorer', 'condition_detail'] %}active{% endif %}" href="{{ url_for('conditions_explorer') }}">
+              <i class="bi bi-journal-medical me-1"></i> Conditions
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">
+              <i class="bi bi-bar-chart-line me-1"></i> Analytics
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'history' %}active{% endif %}" href="{{ url_for('history') }}">
+              <i class="bi bi-clock-history me-1"></i> History
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'about' %}active{% endif %}" href="{{ url_for('about') }}">
+              <i class="bi bi-info-circle me-1"></i> About
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash Messages -->
+  <div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content Body -->
+  <main class="container my-4 flex-grow-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer with Prominent Educational & Medical Disclaimer -->
+  <footer>
+    <div class="container">
+      <div class="row g-4 mb-4">
+        <div class="col-md-5">
+          <h5 class="fw-bold text-success d-flex align-items-center gap-2">
+            <i class="bi bi-flower1"></i> AyurHerb
+          </h5>
+          <p class="small text-secondary mb-2">
+            A Data-Driven Ayurvedic Wellness Recommendation System developed as an academic college project for <strong>Data Science using Python Lab</strong>.
+          </p>
+          <p class="small text-muted mb-0">
+            Powered by TF-IDF Vectorization, Cosine Similarity, and the AyurGenixAI Clinical Knowledge Dataset.
+          </p>
+        </div>
+        <div class="col-md-3">
+          <h6 class="fw-bold text-dark mb-3">Quick Navigation</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-1">
+            <li><a href="{{ url_for('symptom_checker') }}" class="text-decoration-none text-secondary">Symptom Checker</a></li>
+            <li><a href="{{ url_for('herbs_explorer') }}" class="text-decoration-none text-secondary">Ayurvedic Herbs</a></li>
+            <li><a href="{{ url_for('conditions_explorer') }}" class="text-decoration-none text-secondary">Condition Directory</a></li>
+            <li><a href="{{ url_for('analytics') }}" class="text-decoration-none text-secondary">EDA Analytics Dashboard</a></li>
+            <li><a href="{{ url_for('about') }}" class="text-decoration-none text-secondary">Project Methodology & Tech Stack</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded border border-warning-subtle">
+            <h6 class="fw-bold text-dark d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-shield-exclamation text-warning"></i> Educational Disclaimer
+            </h6>
+            <p class="small text-muted mb-0" style="font-size: 0.82rem; line-height: 1.4;">
+              <strong>AyurHerb</strong> is strictly an educational wellness reference. It does <strong>not</strong> provide medical diagnoses, clinical prescriptions, or guaranteed treatments. Always consult a qualified medical practitioner or licensed Ayurvedic doctor for severe or persistent health issues.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <hr class="border-secondary-subtle">
+      
+      <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center small text-muted">
+        <span>&copy; 2026 AyurHerb – Data Science using Python Mini-Project.</span>
+        <span>Built with Flask & Scikit-learn</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Custom Script -->
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}{{ herb.name }} – Ayurvedic Herb Profile – AyurHerb{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <a href="{{ url_for('herbs_explorer') }}" class="btn btn-sm btn-outline-secondary mb-3">
+    <i class="bi bi-arrow-left me-1"></i> Back to Herb Explorer
+  </a>
+  
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
+    <div>
+      <div class="d-inline-flex align-items-center gap-1 badge bg-success-subtle text-success border border-success-subtle mb-2 px-3 py-1">
+        <i class="bi bi-flower1"></i> Medicinal Herb Profile (Dravya)
+      </div>
+      <h1 class="fw-bold text-success mb-1">{{ herb.name }}</h1>
+      <p class="text-secondary small mb-0">
+        Referenced in {{ herb.occurrences }} clinical condition records in the AyurGenixAI dataset.
+      </p>
+    </div>
+    <div>
+      <a href="{{ url_for('symptom_checker') }}" class="btn btn-ayur-primary">
+        <i class="bi bi-heart-pulse me-1"></i> Check Symptoms
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Left Column: Core Properties -->
+  <div class="col-lg-8">
+    
+    <!-- Associated Conditions Card -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h5 class="fw-bold text-dark mb-3">
+        <i class="bi bi-journal-medical text-primary me-2"></i> Documented Therapeutic Indications
+      </h5>
+      <p class="small text-secondary mb-3">
+        Conditions where <strong>{{ herb.name }}</strong> is documented as a primary or synergistic herbal constituent:
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        {% for cond in herb.conditions %}
+          <a href="{{ url_for('condition_detail', condition_name=cond) }}" class="badge bg-light text-dark border p-2 text-decoration-none hover-shadow">
+            <i class="bi bi-link-45deg me-1"></i>{{ cond }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Formulations & Preparations -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h5 class="fw-bold text-dark mb-3">
+        <i class="bi bi-cup-hot-fill text-success me-2"></i> Traditional Formulations & Preparations (Kalpana)
+      </h5>
+      <ul class="list-group list-group-flush">
+        {% for form in herb.formulations %}
+          {% if form %}
+            <li class="list-group-item px-0 py-2 small text-secondary">
+              <i class="bi bi-check-circle-fill text-success me-2"></i> {{ form }}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Sample Records from Dataset -->
+    <div class="ayur-card p-4 bg-white shadow-sm">
+      <h5 class="fw-bold text-dark mb-3">
+        <i class="bi bi-table text-info me-2"></i> Sample Clinical Use Cases from Dataset
+      </h5>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle small">
+          <thead class="table-light">
+            <tr>
+              <th>Condition</th>
+              <th>Symptoms</th>
+              <th>Severity</th>
+              <th>Preparation</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rec in herb.sample_records %}
+              <tr>
+                <td class="fw-semibold text-success">{{ rec.disease }}</td>
+                <td class="text-secondary">{{ rec.symptoms }}</td>
+                <td><span class="badge-severity">{{ rec.severity }}</span></td>
+                <td class="text-muted">{{ rec.formulation }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Column: Dosha & Lifestyle Guidelines -->
+  <div class="col-lg-4">
+    
+    <!-- Dosha Affiliation -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h6 class="fw-bold text-dark mb-3">
+        <i class="bi bi-yin-yang text-warning me-1"></i> Dosha Imbalance Modulation
+      </h6>
+      <div class="d-flex flex-wrap gap-1 mb-2">
+        {% for d in herb.doshas %}
+          <span class="badge-dosha">{{ d }}</span>
+        {% endfor %}
+      </div>
+      <p class="small text-muted mb-0">
+        In Ayurvedic pharmacology, herbs act to pacify aggravated Dosha combinations (Vata, Pitta, Kapha).
+      </p>
+    </div>
+
+    <!-- Diet & Lifestyle Guidelines -->
+    {% if herb.diets %}
+      <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-egg-fried text-success me-1"></i> Dietary Synergies (Pathya)
+        </h6>
+        <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
+          {% for d in herb.diets %}
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-dot fs-5 text-success"></i>
+              <span>{{ d }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Yoga Suggestions -->
+    {% if herb.yogas %}
+      <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-person-arms-up text-primary me-1"></i> Yoga & Therapy Guidelines
+        </h6>
+        <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
+          {% for y in herb.yogas %}
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check2 text-primary"></i>
+              <span>{{ y }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Safety Note -->
+    <div class="p-3 bg-light rounded-3 border">
+      <div class="small fw-bold text-dark mb-1">
+        <i class="bi bi-shield-exclamation text-warning me-1"></i> Herbal Safety Note
+      </div>
+      <p class="small text-muted mb-0">
+        Herbal remedies should be taken in appropriate traditional dosages. Consult an Ayurvedic physician if you are pregnant, nursing, or taking prescription medications.
+      </p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

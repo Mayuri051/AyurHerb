@@ -1,0 +1,306 @@
+/* AyurHerb - Custom Modern Healthcare Stylesheet */
+
+:root {
+  --primary-color: #1b4d3e;
+  --primary-dark: #12352a;
+  --primary-light: #2c6e49;
+  --secondary-color: #4c956c;
+  --accent-teal: #028090;
+  --accent-gold: #e9c46a;
+  --accent-coral: #e76f51;
+  --bg-main: #f8faf9;
+  --bg-card: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --border-radius-sm: 8px;
+  --border-radius-md: 14px;
+  --border-radius-lg: 20px;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(27, 77, 62, 0.08);
+  --shadow-lg: 0 8px 24px rgba(27, 77, 62, 0.12);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar */
+.navbar-ayur {
+  background-color: #ffffff;
+  border-bottom: 2px solid #e7efe9;
+  box-shadow: var(--shadow-sm);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--primary-color) !important;
+  letter-spacing: -0.5px;
+}
+
+.navbar-brand .brand-badge {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background-color: #e8f5e9;
+  color: var(--primary-light);
+  padding: 2px 8px;
+  border-radius: 20px;
+  vertical-align: middle;
+}
+
+.nav-link {
+  font-weight: 500;
+  color: var(--text-secondary) !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--primary-color) !important;
+  background-color: #f0f7f3;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #1b4d3e 0%, #2c6e49 50%, #3e8e60 100%);
+  color: white;
+  padding: 4rem 1rem;
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 2.5rem;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::after {
+  content: "🌿";
+  position: absolute;
+  right: -20px;
+  bottom: -40px;
+  font-size: 14rem;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.hero-title {
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.15rem;
+  opacity: 0.92;
+  max-width: 650px;
+}
+
+/* Custom Cards */
+.ayur-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.ayur-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
+.stat-card {
+  border-left: 4px solid var(--primary-color);
+  padding: 1.25rem;
+  background: #ffffff;
+  border-radius: var(--border-radius-md);
+}
+
+.stat-card .stat-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  line-height: 1;
+}
+
+.stat-card .stat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+/* Recommendation Result Card */
+.result-card {
+  background: #ffffff;
+  border: 1px solid #d1e7dd;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 1.75rem;
+  transition: all 0.25s ease;
+}
+
+.result-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
+}
+
+.result-card-header {
+  background: linear-gradient(to right, #f0f7f3, #ffffff);
+  border-bottom: 1px solid #e2ece5;
+  padding: 1rem 1.5rem;
+}
+
+.similarity-badge {
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.4rem 0.9rem;
+  border-radius: 30px;
+  background: #e8f5e9;
+  color: #1b4d3e;
+  border: 1px solid #a3d9a5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.similarity-badge.high {
+  background: #d1e7dd;
+  color: #0f5132;
+  border-color: #a3cfbb;
+}
+
+.similarity-badge.medium {
+  background: #fff3cd;
+  color: #664d03;
+  border-color: #ffe69c;
+}
+
+/* Badges */
+.badge-dosha {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.badge-severity {
+  background-color: #fef3c7;
+  color: #92400e;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.badge-herb {
+  background-color: #dcfce7;
+  color: #15803d;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* Symptom Quick Chips */
+.symptom-chip {
+  display: inline-block;
+  background-color: #f1f5f9;
+  color: #334155;
+  padding: 6px 14px;
+  border-radius: 30px;
+  margin: 4px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.symptom-chip:hover {
+  background-color: #e2e8f0;
+  border-color: #94a3b8;
+  transform: scale(1.02);
+}
+
+.symptom-chip.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 6px rgba(27, 77, 62, 0.25);
+}
+
+/* Buttons */
+.btn-ayur-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.btn-ayur-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-ayur-outline {
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  background: transparent;
+  font-weight: 600;
+  padding: 0.55rem 1.3rem;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.btn-ayur-outline:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Disclaimer Banner */
+.disclaimer-banner {
+  background-color: #f8fafc;
+  border-left: 4px solid #3b82f6;
+  padding: 1rem 1.25rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9rem;
+  color: #334155;
+  margin: 1.5rem 0;
+}
+
+.emergency-banner {
+  background-color: #fef2f2;
+  border: 2px solid #ef4444;
+  border-radius: var(--border-radius-md);
+  padding: 1.5rem;
+  color: #991b1b;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
+}
+
+/* Footer */
+footer {
+  margin-top: auto;
+  background-color: #ffffff;
+  border-top: 1px solid var(--border-color);
+  padding: 2rem 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}

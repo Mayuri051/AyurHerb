@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Ayurvedic Herb Explorer – AyurHerb{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
+    <div>
+      <h2 class="fw-bold text-success mb-1">
+        <i class="bi bi-tree-fill me-2"></i> Ayurvedic Herb Explorer (Dravya Vijnana)
+      </h2>
+      <p class="text-secondary small mb-0">
+        Browse and search medicinal herbs extracted from the AyurGenixAI clinical knowledge dataset.
+      </p>
+    </div>
+    <div>
+      <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6">
+        {{ herbs|length }} of {{ total_count }} Herbs Documented
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filter Controls -->
+<div class="ayur-card p-3 p-md-4 mb-4 bg-white shadow-sm">
+  <form method="GET" action="{{ url_for('herbs_explorer') }}" class="row g-3 align-items-center">
+    <div class="col-md-7">
+      <div class="input-group">
+        <span class="input-group-text bg-light"><i class="bi bi-search text-muted"></i></span>
+        <input
+          type="text"
+          class="form-control"
+          name="q"
+          value="{{ search_query }}"
+          placeholder="Search by herb name (e.g. Tulsi, Ashwagandha, Brahmi), condition, or formulation..."
+        >
+      </div>
+    </div>
+    <div class="col-md-3">
+      <select name="dosha" class="form-select">
+        <option value="">All Doshas</option>
+        <option value="vata" {% if selected_dosha == 'vata' %}selected{% endif %}>Vata</option>
+        <option value="pitta" {% if selected_dosha == 'pitta' %}selected{% endif %}>Pitta</option>
+        <option value="kapha" {% if selected_dosha == 'kapha' %}selected{% endif %}>Kapha</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-ayur-primary w-100">
+        Filter
+      </button>
+      {% if search_query or selected_dosha %}
+        <a href="{{ url_for('herbs_explorer') }}" class="btn btn-outline-secondary" title="Reset Filters">
+          <i class="bi bi-x-lg"></i>
+        </a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Herbs Grid -->
+{% if herbs %}
+  <div class="row g-4">
+    {% for herb in herbs %}
+      <div class="col-md-6 col-lg-4">
+        <div class="ayur-card p-4 h-100 d-flex flex-column justify-content-between bg-white shadow-sm">
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h4 class="fw-bold text-success mb-0">{{ herb.name }}</h4>
+              <span class="badge bg-light text-secondary border small">
+                {{ herb.count }} {% if herb.count == 1 %}case{% else %}cases{% endif %}
+              </span>
+            </div>
+            
+            <div class="mb-3">
+              {% if herb.doshas %}
+                <span class="badge-dosha small d-inline-block mb-1">{{ herb.doshas }}</span>
+              {% endif %}
+            </div>
+
+            <div class="small mb-2">
+              <strong class="text-dark">Associated Conditions:</strong>
+              <div class="mt-1">
+                {% for cond in herb.conditions %}
+                  <span class="badge bg-secondary-subtle text-dark me-1 mb-1">{{ cond }}</span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="small mb-2">
+              <strong class="text-dark">Formulations:</strong>
+              <span class="text-secondary d-block mt-0">{{ herb.formulations or 'Traditional decoctions' }}</span>
+            </div>
+
+            {% if herb.remedies %}
+              <div class="small mb-3">
+                <strong class="text-dark">Traditional Remedies:</strong>
+                <span class="text-muted d-block mt-0">{{ herb.remedies }}</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="pt-3 border-top mt-2">
+            <a href="{{ url_for('herb_detail', herb_name=herb.name) }}" class="btn btn-sm btn-outline-success w-100">
+              View Detailed Herb Profile <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="ayur-card p-5 text-center bg-white shadow-sm">
+    <i class="bi bi-tree text-muted fs-1 mb-3 d-block"></i>
+    <h5 class="fw-bold text-dark">No Ayurvedic Herbs Found</h5>
+    <p class="text-muted small">No herbs matched your search criteria. Try clearing the search query or selecting a different dosha filter.</p>
+    <a href="{{ url_for('herbs_explorer') }}" class="btn btn-sm btn-ayur-primary">Reset Filter</a>
+  </div>
+{% endif %}
+{% endblock %}

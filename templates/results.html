@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Recommendation Results – AyurHerb{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
+    <div>
+      <a href="{{ url_for('symptom_checker') }}" class="btn btn-sm btn-outline-secondary mb-2">
+        <i class="bi bi-arrow-left me-1"></i> New Symptom Check
+      </a>
+      <h2 class="fw-bold text-success mb-1">
+        <i class="bi bi-file-earmark-medical-fill me-2"></i> Ayurvedic Wellness Analysis
+      </h2>
+      <div class="text-secondary small">
+        Analyzed Query: <span class="badge bg-light text-dark border fs-6">"{{ query }}"</span>
+      </div>
+    </div>
+    <div>
+      <a href="{{ url_for('symptom_checker') }}" class="btn btn-ayur-primary">
+        <i class="bi bi-arrow-repeat me-1"></i> Check Again
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- CASE 1: EMERGENCY MEDICAL RED-FLAG DETECTED -->
+{% if is_emergency %}
+<div class="emergency-banner mb-4">
+  <div class="d-flex align-items-start gap-3">
+    <i class="bi bi-shield-fill-exclamation fs-1 text-danger"></i>
+    <div>
+      <h4 class="fw-bold text-danger mb-2">URGENT: Immediate Medical Evaluation Recommended</h4>
+      <p class="fs-6 mb-3 text-dark fw-medium">
+        {{ safety.emergency_message }}
+      </p>
+      
+      <div class="p-3 bg-white rounded-3 border border-danger-subtle mb-3">
+        <strong class="text-danger">Critical Indicator(s) Detected in Query:</strong>
+        <ul class="mb-0 mt-1">
+          {% for flag in safety.detected_flags %}
+            <li class="fw-semibold text-danger">{{ flag }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <p class="small text-secondary mb-3">
+        {{ safety.advice }}
+      </p>
+
+      <div class="d-flex flex-wrap gap-2">
+        <a href="tel:112" class="btn btn-danger fw-bold">
+          <i class="bi bi-telephone-fill me-1"></i> Call Emergency Services (112 / 108 / 911)
+        </a>
+        <a href="{{ url_for('symptom_checker') }}" class="btn btn-outline-danger">
+          Return to Symptom Checker
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+
+<!-- Standard Educational Disclaimer -->
+<div class="disclaimer-banner d-flex gap-3 align-items-center mb-4">
+  <i class="bi bi-info-circle-fill text-primary fs-3 flex-shrink-0"></i>
+  <div class="small">
+    <strong>Educational Wellness Disclaimer:</strong>
+    The scores below represent mathematical <strong>Symptom Similarity Scores</strong> based on textual alignment with classical Ayurvedic records. They do <em>not</em> constitute a medical diagnosis or guaranteed treatment. Consult a licensed healthcare practitioner for medical guidance.
+  </div>
+</div>
+
+<!-- CASE 2: RESULTS FOUND -->
+{% if results %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold text-dark mb-0">
+      <i class="bi bi-stars text-warning me-1"></i> Top Matching Ayurvedic References ({{ results|length }} found)
+    </h5>
+    <span class="small text-muted">Relevance Threshold: &ge; {{ threshold * 100 }}%</span>
+  </div>
+
+  <div class="row g-4">
+    {% for item in results %}
+      <div class="col-12">
+        <div class="result-card">
+          
+          <!-- Card Header -->
+          <div class="result-card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+            <div>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <h4 class="fw-bold text-success mb-0">{{ item.disease }}</h4>
+                {% if item.hindi_name and item.hindi_name != 'N/A' %}
+                  <span class="badge bg-secondary-subtle text-dark border">हिंदी: {{ item.hindi_name }}</span>
+                {% endif %}
+                {% if item.marathi_name and item.marathi_name != 'N/A' %}
+                  <span class="badge bg-secondary-subtle text-dark border">मराठी: {{ item.marathi_name }}</span>
+                {% endif %}
+              </div>
+              <div class="small text-muted mt-1">
+                Typical Severity: <span class="badge-severity">{{ item.symptom_severity }}</span> &bull; 
+                Dosha Imbalance: <span class="badge-dosha">{{ item.doshas }}</span>
+              </div>
+            </div>
+            
+            <div class="text-md-end">
+              <div class="similarity-badge {% if item.similarity_percentage >= 50 %}high{% else %}medium{% endif %}">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Symptom Similarity Score: <strong>{{ item.similarity_percentage }}%</strong></span>
+              </div>
+              <div class="small text-muted mt-1">(Cosine metric: {{ item.similarity_score }})</div>
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="p-4">
+            
+            <!-- Documented Symptoms & Matched Terms -->
+            <div class="mb-3 p-3 bg-light rounded-3">
+              <h6 class="fw-bold text-dark mb-1">
+                <i class="bi bi-activity text-danger me-1"></i> Documented Clinical Symptoms in Dataset:
+              </h6>
+              <p class="small text-secondary mb-2">{{ item.symptoms }}</p>
+              {% if item.matched_terms %}
+                <div class="small">
+                  <strong class="text-success">Matched Keywords:</strong>
+                  {% for t in item.matched_terms %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle me-1">{{ t }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Grid of Ayurvedic Recommendations -->
+            <div class="row g-3 mb-3">
+              
+              <!-- Ayurvedic Herbs -->
+              <div class="col-md-6">
+                <div class="p-3 border rounded-3 h-100 bg-white">
+                  <h6 class="fw-bold text-success mb-2 d-flex align-items-center gap-1">
+                    <i class="bi bi-tree-fill"></i> Traditional Ayurvedic Herbs:
+                  </h6>
+                  <p class="fw-semibold text-dark mb-1">{{ item.ayurvedic_herbs }}</p>
+                  <span class="small text-muted">Primary herbal ingredients documented for this condition</span>
+                </div>
+              </div>
+
+              <!-- Traditional Formulation -->
+              <div class="col-md-6">
+                <div class="p-3 border rounded-3 h-100 bg-white">
+                  <h6 class="fw-bold text-primary mb-2 d-flex align-items-center gap-1">
+                    <i class="bi bi-cup-hot-fill"></i> Formulation / Preparation (Kalpana):
+                  </h6>
+                  <p class="fw-semibold text-dark mb-1">{{ item.formulation }}</p>
+                  <span class="small text-muted">Traditional preparation format and complementary adjuncts</span>
+                </div>
+              </div>
+
+              <!-- Home / Herbal Remedies -->
+              <div class="col-md-6">
+                <div class="p-3 border rounded-3 h-100 bg-white">
+                  <h6 class="fw-bold text-warning-emphasis mb-2 d-flex align-items-center gap-1">
+                    <i class="bi bi-house-heart-fill"></i> Home & Alternative Remedies:
+                  </h6>
+                  <p class="text-secondary small mb-0">{{ item.herbal_remedies }}</p>
+                </div>
+              </div>
+
+              <!-- Yoga & Physical Therapy -->
+              <div class="col-md-6">
+                <div class="p-3 border rounded-3 h-100 bg-white">
+                  <h6 class="fw-bold text-info-emphasis mb-2 d-flex align-items-center gap-1">
+                    <i class="bi bi-person-arms-up"></i> Yoga & Therapy Guidelines:
+                  </h6>
+                  <p class="text-secondary small mb-0">{{ item.yoga_and_therapy }}</p>
+                </div>
+              </div>
+
+              <!-- Diet and Lifestyle -->
+              <div class="col-md-12">
+                <div class="p-3 border rounded-3 bg-white">
+                  <h6 class="fw-bold text-dark mb-2 d-flex align-items-center gap-1">
+                    <i class="bi bi-egg-fried text-success"></i> Diet & Lifestyle Recommendations (Pathya / Apathya):
+                  </h6>
+                  <p class="text-secondary small mb-0">{{ item.diet_and_lifestyle }}</p>
+                </div>
+              </div>
+
+              <!-- Prevention & Precautions -->
+              <div class="col-md-12">
+                <div class="p-3 bg-light-subtle border rounded-3">
+                  <div class="row g-2">
+                    <div class="col-md-6">
+                      <div class="small">
+                        <strong><i class="bi bi-shield-check text-success me-1"></i> Prevention (Dinacharya):</strong>
+                        <span class="text-secondary">{{ item.prevention }}</span>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="small">
+                        <strong><i class="bi bi-exclamation-circle text-danger me-1"></i> Clinical Precautions:</strong>
+                        <span class="text-secondary">{{ item.medical_intervention }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Footer Details -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center pt-2 border-top small text-muted">
+              <div>
+                <span>Prakriti Balance: <strong>{{ item.prakriti }}</strong></span> &bull; 
+                <span>Duration: <strong>{{ item.duration_of_treatment }}</strong></span>
+              </div>
+              <div>
+                <a href="{{ url_for('condition_detail', condition_name=item.disease) }}" class="btn btn-sm btn-outline-success">
+                  View Full Condition Profile <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+<!-- CASE 3: NO MATCHING RESULTS ABOVE THRESHOLD -->
+{% else %}
+  <div class="ayur-card p-5 text-center bg-white shadow-sm my-4">
+    <i class="bi bi-search text-muted fs-1 mb-3 d-block"></i>
+    <h4 class="fw-bold text-dark mb-2">No Sufficiently Similar Record Found</h4>
+    <p class="text-secondary max-w-600 mx-auto mb-4">
+      No sufficiently similar record was found in the current dataset matching your description (Similarity &ge; {{ threshold * 100 }}%).
+      Please try describing your symptoms differently, adding more specific terms, or consult a qualified healthcare professional.
+    </p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{{ url_for('symptom_checker') }}" class="btn btn-ayur-primary">
+        <i class="bi bi-arrow-left me-1"></i> Try Different Symptoms
+      </a>
+      <a href="{{ url_for('conditions_explorer') }}" class="btn btn-ayur-outline">
+        <i class="bi bi-journal-medical me-1"></i> Browse Condition Directory
+      </a>
+    </div>
+  </div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

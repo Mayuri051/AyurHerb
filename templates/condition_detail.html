@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}{{ condition.disease }} – Condition Details – AyurHerb{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <a href="{{ url_for('conditions_explorer') }}" class="btn btn-sm btn-outline-secondary mb-3">
+    <i class="bi bi-arrow-left me-1"></i> Back to Conditions Directory
+  </a>
+  
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
+    <div>
+      <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+        <h1 class="fw-bold text-success mb-0">{{ condition.disease }}</h1>
+        {% if condition.hindi_name and condition.hindi_name != 'N/A' %}
+          <span class="badge bg-secondary-subtle text-dark border fs-6">हिंदी: {{ condition.hindi_name }}</span>
+        {% endif %}
+        {% if condition.marathi_name and condition.marathi_name != 'N/A' %}
+          <span class="badge bg-secondary-subtle text-dark border fs-6">मराठी: {{ condition.marathi_name }}</span>
+        {% endif %}
+      </div>
+      <p class="text-secondary small mb-0">
+        Ayurvedic classification, traditional dravyas, yoga therapy, and lifestyle guidelines.
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('symptom_checker') }}" class="btn btn-ayur-primary">
+        <i class="bi bi-heart-pulse me-1"></i> Match Symptoms
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Non-Prescription Advisory Notice -->
+<div class="alert alert-info border-info-subtle d-flex gap-3 align-items-center mb-4 shadow-sm">
+  <i class="bi bi-info-circle-fill text-info fs-4 flex-shrink-0"></i>
+  <div class="small">
+    <strong>Educational & Non-Prescriptive Notice:</strong>
+    All clinical characteristics and Ayurvedic remedies below represent educational reference data from the AyurGenixAI dataset. This profile does <em>not</em> constitute a medical prescription or clinical directive.
+  </div>
+</div>
+
+<div class="row g-4">
+  
+  <!-- Left Column: Core Clinical & Ayurvedic Profile -->
+  <div class="col-lg-8">
+    
+    <!-- Documented Symptoms & Severity -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h5 class="fw-bold text-dark mb-3">
+        <i class="bi bi-activity text-danger me-2"></i> Clinical Symptoms & Presentation
+      </h5>
+      <p class="fs-6 text-secondary mb-3">
+        {{ condition.symptoms }}
+      </p>
+      
+      <div class="row g-3 pt-2 border-top">
+        <div class="col-sm-4">
+          <div class="small text-muted">Documented Severity:</div>
+          <div class="fw-bold text-dark"><span class="badge-severity">{{ condition.symptom_severity }}</span></div>
+        </div>
+        <div class="col-sm-4">
+          <div class="small text-muted">Seasonal Variation:</div>
+          <div class="fw-bold text-dark">{{ condition.seasonal_variation }}</div>
+        </div>
+        <div class="col-sm-4">
+          <div class="small text-muted">Treatment Duration:</div>
+          <div class="fw-bold text-dark">{{ condition.duration }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ayurvedic Herbal Interventions & Formulations -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h5 class="fw-bold text-success mb-3">
+        <i class="bi bi-tree-fill me-2"></i> Ayurvedic Herbal Management (Chikitsa)
+      </h5>
+      
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <div class="p-3 bg-light rounded-3 h-100 border">
+            <h6 class="fw-bold text-success mb-1">
+              <i class="bi bi-flower1 me-1"></i> Recommended Herbs (Dravyas):
+            </h6>
+            <p class="fw-semibold text-dark mb-0">{{ condition.ayurvedic_herbs }}</p>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="p-3 bg-light rounded-3 h-100 border">
+            <h6 class="fw-bold text-primary mb-1">
+              <i class="bi bi-cup-hot-fill me-1"></i> Formulation & Preparation (Kalpana):
+            </h6>
+            <p class="fw-semibold text-dark mb-0">{{ condition.formulation }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 border rounded-3 bg-white mb-3">
+        <h6 class="fw-bold text-warning-emphasis mb-1">
+          <i class="bi bi-house-heart-fill me-1"></i> Traditional Home & Alternative Remedies:
+        </h6>
+        <p class="small text-secondary mb-0">{{ condition.herbal_remedies }}</p>
+      </div>
+
+      <div class="p-3 border rounded-3 bg-white">
+        <h6 class="fw-bold text-info-emphasis mb-1">
+          <i class="bi bi-person-arms-up me-1"></i> Yoga Asanas & Physical Therapy:
+        </h6>
+        <p class="small text-secondary mb-0">{{ condition.yoga_therapy }}</p>
+      </div>
+    </div>
+
+    <!-- Diet, Lifestyle & Prevention Guidelines -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h5 class="fw-bold text-dark mb-3">
+        <i class="bi bi-egg-fried text-success me-2"></i> Diet, Dinacharya & Prevention
+      </h5>
+      
+      <div class="mb-3">
+        <h6 class="fw-bold text-dark mb-1">Dietary & Lifestyle Guidelines (Pathya / Apathya):</h6>
+        <p class="small text-secondary mb-0">{{ condition.diet_lifestyle }}</p>
+      </div>
+
+      <div class="mb-3 pt-2 border-top">
+        <h6 class="fw-bold text-dark mb-1">Preventive Care (Nidana Parivarjana):</h6>
+        <p class="small text-secondary mb-0">{{ condition.prevention }}</p>
+      </div>
+
+      <div class="pt-2 border-top">
+        <h6 class="fw-bold text-dark mb-1">General Patient Recommendations:</h6>
+        <p class="small text-secondary mb-0">{{ condition.patient_recommendations }}</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Column: Doshas, Risk Factors & Clinical Diagnostics -->
+  <div class="col-lg-4">
+    
+    <!-- Ayurvedic Constitution Card -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h6 class="fw-bold text-dark mb-3">
+        <i class="bi bi-yin-yang text-warning me-1"></i> Ayurvedic Classification
+      </h6>
+      <div class="mb-2">
+        <span class="small text-muted d-block">Dosha Imbalance:</span>
+        <span class="badge-dosha fs-6 mt-1 d-inline-block">{{ condition.doshas }}</span>
+      </div>
+      <div class="mb-2">
+        <span class="small text-muted d-block">Constitution / Prakriti:</span>
+        <span class="fw-semibold text-dark">{{ condition.prakriti }}</span>
+      </div>
+      <div>
+        <span class="small text-muted d-block">Target Demographics:</span>
+        <span class="small text-secondary">{{ condition.age_group }} &bull; {{ condition.gender }}</span>
+      </div>
+    </div>
+
+    <!-- Clinical Context & Diagnostics -->
+    <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
+      <h6 class="fw-bold text-dark mb-3">
+        <i class="bi bi-clipboard2-pulse text-primary me-1"></i> Clinical Evaluation Context
+      </h6>
+      
+      <div class="mb-2 small">
+        <strong class="text-dark">Diagnostic Tests:</strong>
+        <p class="text-secondary mb-1">{{ condition.diagnosis_tests }}</p>
+      </div>
+
+      <div class="mb-2 small">
+        <strong class="text-dark">Known Risk Factors:</strong>
+        <p class="text-secondary mb-1">{{ condition.risk_factors }}</p>
+      </div>
+
+      <div class="mb-2 small">
+        <strong class="text-dark">Medical Intervention / Red-Flags:</strong>
+        <p class="text-secondary mb-1">{{ condition.medical_intervention }}</p>
+      </div>
+
+      <div class="small">
+        <strong class="text-dark">Potential Complications:</strong>
+        <p class="text-secondary mb-0">{{ condition.complications }}</p>
+      </div>
+    </div>
+
+    <!-- Environmental & Lifestyle Factors -->
+    <div class="p-3 bg-light rounded-3 border">
+      <h6 class="fw-bold text-dark small mb-2">
+        <i class="bi bi-cloud-sun text-info me-1"></i> Lifestyle & Environmental Triggers
+      </h6>
+      <div class="small text-secondary d-flex flex-column gap-1">
+        <div><strong>Environment:</strong> {{ condition.environmental_factors }}</div>
+        <div><strong>Sleep Patterns:</strong> {{ condition.sleep_patterns }}</div>
+        <div><strong>Stress Level:</strong> {{ condition.stress_levels }}</div>
+        <div><strong>Physical Activity:</strong> {{ condition.physical_activity }}</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

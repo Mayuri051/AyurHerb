@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Exploratory Data Analysis Dashboard – AyurHerb{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
+    <div>
+      <h2 class="fw-bold text-success mb-1">
+        <i class="bi bi-bar-chart-line-fill me-2"></i> Exploratory Data Analysis & Visual Analytics
+      </h2>
+      <p class="text-secondary small mb-0">
+        Statistical insights, distributions, and cross-tabulations computed from the 446 AyurGenixAI clinical records.
+      </p>
+    </div>
+    <div>
+      <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fs-6">
+        <i class="bi bi-database-check me-1"></i> Cleaned Dataset Loaded
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- KPI Metric Cards -->
+<section class="mb-5">
+  <div class="row g-3">
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card ayur-card h-100">
+        <div class="stat-value">{{ metrics.total_records }}</div>
+        <div class="stat-label mt-1">Total Records</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card ayur-card h-100" style="border-left-color: #028090;">
+        <div class="stat-value" style="color: #028090;">{{ metrics.unique_diseases }}</div>
+        <div class="stat-label mt-1">Unique Conditions</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card ayur-card h-100" style="border-left-color: #2c6e49;">
+        <div class="stat-value" style="color: #2c6e49;">{{ metrics.unique_herbs }}</div>
+        <div class="stat-label mt-1">Herbs (Dravyas)</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="stat-card ayur-card h-100" style="border-left-color: #e76f51;">
+        <div class="stat-value" style="color: #e76f51;">{{ metrics.unique_symptoms }}</div>
+        <div class="stat-label mt-1">Symptom Tokens</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="stat-card ayur-card h-100" style="border-left-color: #6a4c93;">
+        <div class="stat-value" style="color: #6a4c93;">{{ metrics.unique_formulations }}</div>
+        <div class="stat-label mt-1">Formulations</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Visual Analytics Gallery -->
+<section class="mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold text-dark mb-0">
+      <i class="bi bi-graph-up text-primary me-2"></i> Statistical Visualizations Suite (11 Charts)
+    </h4>
+  </div>
+
+  <div class="row g-4">
+    {% for plot in plots %}
+      <div class="col-lg-6">
+        <div class="ayur-card bg-white shadow-sm overflow-hidden h-100 d-flex flex-column justify-content-between">
+          <div>
+            <div class="p-3 border-bottom bg-light">
+              <h5 class="fw-bold text-success mb-1">{{ plot.title }}</h5>
+              <p class="small text-secondary mb-0">{{ plot.description }}</p>
+            </div>
+            <div class="p-3 text-center">
+              <img
+                src="{{ url_for('static', filename='plots/' + plot.filename) }}"
+                alt="{{ plot.title }}"
+                class="img-fluid rounded border shadow-sm"
+                style="max-height: 380px; width: 100%; object-fit: contain; background: #ffffff;"
+                loading="lazy"
+              >
+            </div>
+          </div>
+          <div class="p-3 border-top bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small text-muted font-monospace">{{ plot.filename }}</span>
+            <a href="{{ url_for('static', filename='plots/' + plot.filename) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-zoom-in me-1"></i> Full Size
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Data Science Methodology Summary Card -->
+<section class="ayur-card p-4 p-md-5 bg-white shadow-sm">
+  <h4 class="fw-bold text-success mb-3">
+    <i class="bi bi-code-square me-2"></i> Data Science & EDA Methodology
+  </h4>
+  <p class="text-secondary small mb-3">
+    The visualizations above are programmatically computed using <strong>Pandas</strong>, <strong>NumPy</strong>, <strong>Matplotlib</strong>, and <strong>Seaborn</strong>.
+    Textual fields such as <code>Ayurvedic Herbs</code> and <code>Formulation</code> contain composite multi-ingredient strings which were tokenized, cleaned of punctuation, and normalized into frequency distributions.
+  </p>
+  <div class="row g-3 small">
+    <div class="col-md-4">
+      <div class="p-3 bg-light rounded-3 border">
+        <strong>Data Cleaning & Standardization:</strong>
+        <p class="text-muted mb-0 mt-1">Imputed missing values, unified casing, and created a 35th unified search vector column.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="p-3 bg-light rounded-3 border">
+        <strong>Cross-Tabulation & Heatmaps:</strong>
+        <p class="text-muted mb-0 mt-1">Mapped disease categories against seasonal variables and symptom severities.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="p-3 bg-light rounded-3 border">
+        <strong>Categorical Aggregations:</strong>
+        <p class="text-muted mb-0 mt-1">Extracted primary Ayurvedic Doshas (Vata, Pitta, Kapha) and demographic cohorts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

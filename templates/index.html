@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}AYURHERB – Data-Driven Ayurvedic Wellness Recommendation System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center text-md-start">
+  <div class="row align-items-center">
+    <div class="col-lg-8">
+      <div class="d-inline-flex align-items-center gap-2 px-3 py-1 bg-white bg-opacity-25 rounded-pill mb-3">
+        <i class="bi bi-stars"></i>
+        <span class="small fw-semibold">Data Science using Python Lab Mini-Project</span>
+      </div>
+      <h1 class="hero-title mb-3">AYURHERB</h1>
+      <h4 class="fw-semibold mb-3 text-light">Data-Driven Ayurvedic Wellness Recommendation System</h4>
+      <p class="hero-subtitle mb-4">
+        Explore Ayurvedic herbs, traditional remedies, dosha balancing, and personalized lifestyle guidance using data-driven NLP analysis of the AyurGenixAI dataset.
+      </p>
+      <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start">
+        <a href="{{ url_for('symptom_checker') }}" class="btn btn-light btn-lg fw-bold text-success px-4 shadow-sm">
+          <i class="bi bi-heart-pulse-fill me-2 text-danger"></i> Check Symptoms
+        </a>
+        <a href="{{ url_for('herbs_explorer') }}" class="btn btn-outline-light btn-lg fw-semibold px-4">
+          <i class="bi bi-tree me-2"></i> Explore Herbs
+        </a>
+        <a href="{{ url_for('analytics') }}" class="btn btn-outline-light btn-lg fw-semibold px-4">
+          <i class="bi bi-bar-chart-fill me-2"></i> View Analytics
+        </a>
+      </div>
+    </div>
+    <div class="col-lg-4 text-center mt-4 mt-lg-0 d-none d-lg-block">
+      <div class="p-4 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 backdrop-blur">
+        <i class="bi bi-capsule fs-1 mb-2 d-block text-warning"></i>
+        <h5 class="fw-bold mb-1">Traditional Wisdom</h5>
+        <p class="small mb-0 opacity-75">Mapped to 34 clinical parameters and analyzed via TF-IDF & Cosine Similarity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Dataset Metrics Banner -->
+<section class="mb-5">
+  <div class="row g-3">
+    <div class="col-6 col-md-3">
+      <div class="stat-card ayur-card h-100">
+        <div class="stat-value">{{ metrics.total_records }}</div>
+        <div class="stat-label mt-1">Clinical Records</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card ayur-card h-100" style="border-left-color: #028090;">
+        <div class="stat-value" style="color: #028090;">{{ metrics.unique_diseases }}</div>
+        <div class="stat-label mt-1">Unique Conditions</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card ayur-card h-100" style="border-left-color: #2c6e49;">
+        <div class="stat-value" style="color: #2c6e49;">{{ metrics.unique_herbs }}+</div>
+        <div class="stat-label mt-1">Ayurvedic Herbs</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card ayur-card h-100" style="border-left-color: #e76f51;">
+        <div class="stat-value" style="color: #e76f51;">{{ metrics.unique_formulations }}+</div>
+        <div class="stat-label mt-1">Formulations (Kalpana)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Symptom Launch Section -->
+<section class="ayur-card p-4 p-md-5 mb-5 bg-white">
+  <div class="row align-items-center">
+    <div class="col-lg-7">
+      <h3 class="fw-bold text-success mb-2">
+        <i class="bi bi-search me-2"></i> Quick Symptom Analysis
+      </h3>
+      <p class="text-secondary mb-3">
+        Select common symptoms below or enter your own description to receive data-driven Ayurvedic formulations and wellness recommendations.
+      </p>
+      <div class="mb-3">
+        {% for sym in popular_symptoms %}
+          <a href="{{ url_for('symptom_checker') }}" class="symptom-chip text-decoration-none">
+            <i class="bi bi-plus-circle-fill text-success me-1"></i> {{ sym }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-5 text-center mt-3 mt-lg-0">
+      <div class="p-4 bg-light rounded-4 border">
+        <h5 class="fw-bold text-dark mb-2">How It Works</h5>
+        <p class="small text-muted mb-3">
+          Your symptoms are preprocessed, converted into TF-IDF vectors, and compared via Cosine Similarity against authentic Ayurvedic knowledge records.
+        </p>
+        <a href="{{ url_for('symptom_checker') }}" class="btn btn-ayur-primary w-100">
+          Launch Symptom Checker <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- System Feature Highlights -->
+<section class="mb-5">
+  <div class="text-center mb-4">
+    <h3 class="fw-bold text-dark">Core System Features</h3>
+    <p class="text-muted">Bridging ancient Ayurvedic principles with modern machine learning analytics</p>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="ayur-card p-4 h-100">
+        <div class="d-inline-flex p-3 bg-success bg-opacity-10 text-success rounded-4 mb-3">
+          <i class="bi bi-cpu fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">NLP Vectorization Engine</h5>
+        <p class="small text-secondary mb-0">
+          Utilizes Scikit-learn TF-IDF n-gram vectorization and mathematical Cosine Similarity ranking to calculate precise Symptom Similarity Scores without external APIs.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="ayur-card p-4 h-100">
+        <div class="d-inline-flex p-3 bg-danger bg-opacity-10 text-danger rounded-4 mb-3">
+          <i class="bi bi-shield-check fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Clinical Red-Flag Triage</h5>
+        <p class="small text-secondary mb-0">
+          Built-in safety triage intercepting acute or life-threatening symptoms (chest pain, severe breathing distress, convulsions) with urgent medical evaluation warnings.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="ayur-card p-4 h-100">
+        <div class="d-inline-flex p-3 bg-info bg-opacity-10 text-info rounded-4 mb-3">
+          <i class="bi bi-translate fs-3"></i>
+        </div>
+        <h5 class="fw-bold mb-2">Multilingual & Tridosha Context</h5>
+        <p class="small text-secondary mb-0">
+          Includes Hindi (हिंदी) and Marathi (मराठी) vernacular nomenclature along with Vata, Pitta, and Kapha constitutional dosha classifications.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Educational Disclaimer Callout -->
+<div class="disclaimer-banner d-flex gap-3 align-items-center">
+  <i class="bi bi-info-circle-fill text-primary fs-3"></i>
+  <div>
+    <strong>Educational Wellness Disclaimer:</strong>
+    AyurHerb is an educational project designed for academic data science demonstration. Recommendations represent traditional Ayurvedic perspectives and should not replace clinical medical evaluation.
+  </div>
+</div>
+{% endblock %}

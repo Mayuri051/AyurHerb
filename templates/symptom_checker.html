@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Symptom Checker – AyurHerb{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-10">
+    
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h2 class="fw-bold text-success d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-heart-pulse-fill text-danger"></i> Ayurvedic Symptom Checker
+      </h2>
+      <p class="text-muted">
+        Describe what you are experiencing in plain English, or tap the common symptom chips below to match relevant traditional remedies.
+      </p>
+    </div>
+
+    <!-- Prominent Medical & Safety Notice -->
+    <div class="alert alert-warning border-warning-subtle d-flex gap-3 align-items-start mb-4 shadow-sm">
+      <i class="bi bi-exclamation-triangle-fill text-warning fs-4 mt-1"></i>
+      <div>
+        <h6 class="fw-bold text-dark mb-1">Important Educational & Medical Notice</h6>
+        <p class="small text-dark mb-0">
+          This tool provides educational information based on the available dataset and traditional Ayurvedic references. <strong>It does not provide a medical diagnosis or prescribe treatment.</strong>
+          If you are experiencing severe difficulty breathing, crushing chest pain, uncontrolled bleeding, or loss of consciousness, please seek immediate emergency medical care.
+        </p>
+      </div>
+    </div>
+
+    <!-- Symptom Input Form Card -->
+    <div class="ayur-card p-4 p-md-5 mb-4 bg-white shadow-sm">
+      <form action="{{ url_for('analyze_symptoms') }}" method="POST" id="symptom-form">
+        
+        <!-- Interactive Symptom Tag Selection -->
+        <div class="mb-4">
+          <label class="form-label fw-bold text-dark d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-tags-fill text-success me-1"></i> Tap to Select Common Symptoms:</span>
+            <span class="small text-muted fw-normal">Click to toggle chips</span>
+          </label>
+          <div class="p-3 bg-light rounded-3 border" id="symptom-chips-container">
+            {% for symptom in popular_symptoms %}
+              <span class="symptom-chip" data-symptom="{{ symptom }}">
+                <i class="bi bi-plus-lg me-1"></i>{{ symptom }}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Textarea for manual / enriched input -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label for="symptoms-input" class="form-label fw-bold text-dark mb-0">
+              <i class="bi bi-pencil-square text-success me-1"></i> Describe your symptoms in detail:
+            </label>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="clear-symptoms-btn">
+              <i class="bi bi-x-circle me-1"></i> Clear Input
+            </button>
+          </div>
+          <textarea
+            class="form-control form-control-lg fs-6"
+            id="symptoms-input"
+            name="symptoms"
+            rows="4"
+            placeholder="e.g. I have cough, sore throat and mild chest congestion with fatigue..."
+            required
+          ></textarea>
+          <div class="form-text mt-2">
+            <i class="bi bi-info-circle me-1"></i> Tip: You can type natural sentences or combine multiple symptoms separated by commas.
+          </div>
+        </div>
+
+        <!-- Example Prompts -->
+        <div class="mb-4">
+          <span class="small text-muted fw-bold me-2">Try examples:</span>
+          <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('I have cough, sore throat and chest congestion.'); return false;">
+            "Cough & sore throat"
+          </a>
+          <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('Severe headache with migraine and light sensitivity.'); return false;">
+            "Headache & migraine"
+          </a>
+          <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('Indigestion, stomach acidity, bloating after eating.'); return false;">
+            "Indigestion & acidity"
+          </a>
+          <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('Joint stiffness, knee pain and morning swelling.'); return false;">
+            "Joint pain & stiffness"
+          </a>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center pt-2">
+          <button type="submit" class="btn btn-ayur-primary btn-lg px-5 shadow">
+            <i class="bi bi-stars me-2"></i> Analyze Symptoms
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Informational Steps -->
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="p-3 bg-white rounded-3 border text-center">
+          <div class="fw-bold text-success mb-1">1. NLP Processing</div>
+          <p class="small text-muted mb-0">Input text is tokenized, stripped of noise, and transformed into a TF-IDF vector.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 bg-white rounded-3 border text-center">
+          <div class="fw-bold text-success mb-1">2. Similarity Scoring</div>
+          <p class="small text-muted mb-0">Cosine similarity measures alignment with 446 authenticated Ayurvedic records.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 bg-white rounded-3 border text-center">
+          <div class="fw-bold text-success mb-1">3. Wellness Advice</div>
+          <p class="small text-muted mb-0">Presents herbs, formulations, dosha balance, and lifestyle recommendations.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function setQuery(text) {
+    const input = document.getElementById("symptoms-input");
+    if (input) {
+      input.value = text;
+      // Trigger event to sync chips
+      input.dispatchEvent(new Event('input'));
+    }
+  }
+</script>
+{% endblock %}

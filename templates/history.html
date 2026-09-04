@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Search History – AyurHerb{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
+    <div>
+      <h2 class="fw-bold text-success mb-1">
+        <i class="bi bi-clock-history me-2"></i> Local Search History Log
+      </h2>
+      <p class="text-secondary small mb-0">
+        Review your symptom check audit queries logged locally in the SQLite database (<code>ayurherb.db</code>).
+      </p>
+    </div>
+    {% if history %}
+      <form action="{{ url_for('clear_history') }}" method="POST" onsubmit="return confirm('Are you sure you want to clear all search history?');">
+        <button type="submit" class="btn btn-outline-danger btn-sm">
+          <i class="bi bi-trash3 me-1"></i> Clear Search History
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if history %}
+  <div class="ayur-card bg-white shadow-sm overflow-hidden mb-4">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 5%;">#</th>
+            <th style="width: 35%;">Searched Symptoms</th>
+            <th style="width: 20%;">Date & Time</th>
+            <th style="width: 22%;">Top Matching Condition</th>
+            <th style="width: 18%;">Similarity Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in history %}
+            <tr>
+              <td class="text-muted small">{{ row.id }}</td>
+              <td>
+                <span class="fw-semibold text-dark">{{ row.query }}</span>
+                {% if row.safety_triggered %}
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-2 small">
+                    <i class="bi bi-shield-exclamation"></i> Red-Flag Warning
+                  </span>
+                {% endif %}
+              </td>
+              <td class="small text-muted">
+                <i class="bi bi-calendar3 me-1"></i> {{ row.timestamp }}
+              </td>
+              <td>
+                {% if row.safety_triggered %}
+                  <span class="text-danger fw-bold small">Emergency Triage</span>
+                {% elif row.top_condition and row.top_condition != 'No Match' %}
+                  <span class="fw-semibold text-success">{{ row.top_condition }}</span>
+                {% else %}
+                  <span class="text-muted small">No direct match</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if row.safety_triggered %}
+                  <span class="badge bg-light text-muted border">N/A</span>
+                {% elif row.similarity_score > 0 %}
+                  <span class="similarity-badge small py-1 px-2">
+                    {{ (row.similarity_score * 100)|round(1) }}%
+                  </span>
+                {% else %}
+                  <span class="badge bg-light text-muted border">0.0%</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="small text-muted text-center">
+    <i class="bi bi-shield-lock me-1"></i> Privacy Assurance: Search logs are stored strictly inside your local instance database and contain no personal identity information.
+  </div>
+
+{% else %}
+  <div class="ayur-card p-5 text-center bg-white shadow-sm my-4">
+    <i class="bi bi-inbox text-muted fs-1 mb-3 d-block"></i>
+    <h5 class="fw-bold text-dark mb-2">No Search History Available</h5>
+    <p class="text-muted small max-w-500 mx-auto mb-3">
+      You haven't run any symptom checks yet. Start by entering your symptoms in the symptom checker tool.
+    </p>
+    <a href="{{ url_for('symptom_checker') }}" class="btn btn-ayur-primary">
+      <i class="bi bi-heart-pulse me-1"></i> Go to Symptom Checker
+    </a>
+  </div>
+{% endif %}
+{% endblock %}

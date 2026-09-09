@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AyurHerb: an explainable AI and data-science project for educational Ayurvedic wellness references.">
+  <title>AyurHerb | AI & Data Science Project</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero" id="top">
+    <nav class="nav container" aria-label="Main navigation">
+      <a class="brand" href="#top"><span aria-hidden="true">❋</span> AYURHERB</a>
+      <div class="nav-links"><a href="#about">About</a><a href="#workflow">AI workflow</a><a href="#analytics">Analytics</a><a href="#run">Run it</a></div>
+    </nav>
+    <div class="container hero-content">
+      <p class="eyebrow">Data Science using Python · Academic Project</p>
+      <h1>Explainable Ayurvedic wellness references, grounded in data.</h1>
+      <p class="lead">AyurHerb uses NLP retrieval, transparent similarity scoring, safety triage, and local-first privacy controls to explore a curated Ayurvedic knowledge dataset.</p>
+      <div class="actions"><a class="button button-primary" href="https://github.com/YOUR_USERNAME/ayurherb" target="_blank" rel="noopener">View source on GitHub</a><a class="button button-quiet" href="#workflow">Explore the methodology</a></div>
+      <p class="notice">Educational wellness reference only. It does not diagnose illness or prescribe treatment.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="container metrics" aria-label="Dataset summary">
+      <article><strong>446</strong><span>clinical records</span></article><article><strong>367</strong><span>unique conditions</span></article><article><strong>43+</strong><span>documented herbs</span></article><article><strong>11</strong><span>EDA visualizations</span></article>
+    </section>
+    <section class="container section" id="about">
+      <p class="eyebrow">Project purpose</p><h2>A safer alternative to ungrounded health text generation.</h2>
+      <div class="two-column"><p>Instead of generating treatments, the application retrieves relevant references from the local AyurGenixAI dataset. Results are explicitly labelled as <em>Symptom Similarity Scores</em>, not clinical confidence or diagnostic probability.</p><p>Users can explore herbs, conditions, multilingual names, formulations, lifestyle notes, and EDA findings. An emergency red-flag screen takes priority over any wellness result.</p></div>
+    </section>
+    <section class="surface" id="workflow"><div class="container section"><p class="eyebrow">AI workflow</p><h2>From symptoms to explainable dataset matches.</h2>
+      <div class="workflow"><article><span>01</span><h3>Normalize</h3><p>Clean symptom text and map selected familiar Hindi, Marathi, and colloquial terms to the dataset vocabulary.</p></article><article><span>02</span><h3>Safety screen</h3><p>Rule-based red flags for breathing difficulty, chest pain, seizures, bleeding, and other urgent indicators stop recommendations.</p></article><article><span>03</span><h3>Retrieve</h3><p>TF-IDF vectors with unigram and bigram features are ranked with cosine similarity.</p></article><article><span>04</span><h3>Explain</h3><p>Show matched symptoms, similarity score, and optional seasonal or dosha context without claiming diagnosis.</p></article></div>
+    </div></section>
+    <section class="container section"><p class="eyebrow">Responsible AI features</p><h2>Designed for transparency and privacy.</h2>
+      <div class="cards"><article><h3>Emergency triage</h3><p>High-risk phrases display immediate-care guidance instead of herbs or self-care suggestions.</p></article><article><h3>Opt-in history</h3><p>Symptom searches are saved locally only when the visitor chooses to save them.</p></article><article><h3>Plant image workflow</h3><p>Uploads are validated, capped at 5 MB, processed locally, and deleted afterward. A trained model is required before identification.</p></article></div>
+    </section>
+    <section class="surface" id="analytics"><div class="container section"><p class="eyebrow">Exploratory data analysis</p><h2>What the dataset reveals.</h2>
+      <div class="chart-grid"><figure><img src="assets/disease_frequency.png" alt="Bar chart of the most documented conditions"><figcaption>Top documented conditions</figcaption></figure><figure><img src="assets/top_herbs.png" alt="Bar chart of frequent Ayurvedic herbs"><figcaption>Most frequent herbs</figcaption></figure><figure><img src="assets/dosha_distribution.png" alt="Chart of dosha imbalance distribution"><figcaption>Dosha imbalance distribution</figcaption></figure><figure><img src="assets/disease_vs_season.png" alt="Heatmap relating conditions to seasons"><figcaption>Condition and season heatmap</figcaption></figure></div>
+    </div></section>
+    <section class="container section" id="run"><p class="eyebrow">Run the complete application</p><h2>GitHub Pages hosts this showcase. Flask runs elsewhere.</h2><div class="two-column"><p>GitHub Pages is static hosting, so it cannot execute the Python recommendation engine, SQLite history, image upload handler, or local plant classifier.</p><p>For the working application, deploy this repository to Render, Railway, or PythonAnywhere with <code>gunicorn app:app</code>. Then replace the GitHub link above with your repository URL and add a link to your live deployment.</p></div></section>
+  </main>
+  <footer><div class="container"><span>© 2026 AyurHerb</span><a href="#top">Back to top ↑</a></div></footer>
+</body>
+</html>

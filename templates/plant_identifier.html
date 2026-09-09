@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Ayurvedic Plant Image Identifier – AyurHerb{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+  <h2 class="fw-bold text-success"><i class="bi bi-leaf-fill me-2"></i>Ayurvedic Plant Image Identifier</h2>
+  <p class="text-secondary">Upload a clear photograph of one plant. The image is used only for this local analysis and is deleted afterward.</p>
+  <div class="alert alert-warning small"><strong>Safety note:</strong> Never consume or use a plant based only on an image prediction. Verify its identity with a qualified botanist or Ayurvedic practitioner.</div>
+  <form method="post" enctype="multipart/form-data" class="ayur-card p-4 bg-white shadow-sm mb-4">
+    <label for="plant_image" class="form-label fw-semibold">Plant photo (JPG, PNG, or WEBP; maximum 5 MB)</label>
+    <input class="form-control mb-3" id="plant_image" name="plant_image" type="file" accept="image/jpeg,image/png,image/webp" required>
+    <button class="btn btn-ayur-primary" type="submit"><i class="bi bi-search me-1"></i>Identify plant</button>
+  </form>
+  {% if not model_ready %}<div class="alert alert-info small"><strong>Model setup required:</strong> The upload workflow is active, but no trained local Ayurvedic-plant classifier is installed. Add a trained model and <code>labels.json</code> under <code>models/ayurvedic_plant_classifier</code> to activate prediction.</div>{% endif %}
+  {% if prediction %}
+    <div class="ayur-card p-4 bg-white shadow-sm"><h5 class="fw-bold">Analysis result</h5><p class="text-muted">{{ prediction.message }}</p>
+    {% for candidate in prediction.candidates %}<div class="border rounded p-3 mb-2"><strong class="text-success">{{ candidate.display_name }}</strong> <span class="badge bg-success">{{ candidate.confidence }}%</span><br><span class="small fst-italic">{{ candidate.botanical_name }}</span><p class="small mb-0 mt-2">{{ candidate.traditional_use }}</p></div>{% endfor %}</div>
+  {% endif %}
+</div></div>
+{% endblock %}

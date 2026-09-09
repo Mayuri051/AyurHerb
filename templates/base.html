@@ -41,6 +41,11 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'plant_identifier_page' %}active{% endif %}" href="{{ url_for('plant_identifier_page') }}">
+              <i class="bi bi-image me-1"></i> Plant Scan
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link {% if request.endpoint in ['herbs_explorer', 'herb_detail'] %}active{% endif %}" href="{{ url_for('herbs_explorer') }}">
               <i class="bi bi-tree me-1"></i> Herb Explorer
             </a>
@@ -108,6 +113,7 @@
           <h6 class="fw-bold text-dark mb-3">Quick Navigation</h6>
           <ul class="list-unstyled small d-flex flex-column gap-1">
             <li><a href="{{ url_for('symptom_checker') }}" class="text-decoration-none text-secondary">Symptom Checker</a></li>
+            <li><a href="{{ url_for('plant_identifier_page') }}" class="text-decoration-none text-secondary">Plant Image Identifier</a></li>
             <li><a href="{{ url_for('herbs_explorer') }}" class="text-decoration-none text-secondary">Ayurvedic Herbs</a></li>
             <li><a href="{{ url_for('conditions_explorer') }}" class="text-decoration-none text-secondary">Condition Directory</a></li>
             <li><a href="{{ url_for('analytics') }}" class="text-decoration-none text-secondary">EDA Analytics Dashboard</a></li>

@@ -212,3 +212,38 @@ http://127.0.0.1:5000
 - Voice-enabled symptom input using Web Speech API.
 - Support for regional language translations beyond Hindi and Marathi (e.g., Tamil, Telugu, Kannada).
 - Exportable PDF wellness summary reports for consultations.
+
+---
+
+## 12. AI Enhancement Module
+
+The application also includes an explainable AI extension:
+
+- **Symptom normalization:** maps a small, documented set of familiar Hindi/Marathi and colloquial terms to the dataset vocabulary before retrieval.
+- **Optional wellness context:** users may provide age group, season, and a wellness/dosha context. This context is shown as supporting evidence; it does not alter the medical meaning of the similarity score or diagnose a condition.
+- **Educational dosha questionnaire:** `/wellness-profile` provides a transparent four-question learning exercise.
+- **Evaluation baseline:** run `python evaluate_recommender.py` to calculate Precision@1, Recall@3, and MRR@3 using `data/evaluation_queries.csv`.
+- **Plant image identifier:** `/plant-identifier` accepts JPG, PNG, and WEBP photos (up to 5 MB), validates them, and deletes them after local inference. It never guesses when no classifier is installed.
+
+### Enabling local plant recognition
+
+Train or obtain a properly licensed Ayurvedic-plant image-classification model, then place it at:
+
+```text
+models/ayurvedic_plant_classifier/
+```
+
+The directory must be a local Hugging Face image-classification model and contain `labels.json`, either as a label list or `{ "labels": [...] }`. Labels should use supported keys such as `tulsi`, `ashwagandha`, `neem`, `aloe_vera`, or `ginger`. The app uses only this local model; it does not upload patient images to a cloud service.
+
+---
+
+## 13. GitHub Pages showcase
+
+The static project showcase is in `docs/`. It presents the methodology and analytics, but GitHub Pages cannot run Flask, Python, SQLite, TF-IDF retrieval, or plant-image inference.
+
+1. Push this repository to GitHub.
+2. Open **Settings → Pages** in the GitHub repository.
+3. Choose **Deploy from a branch**, select `main`, then select `/docs` and save.
+4. GitHub will publish the showcase at `https://YOUR_USERNAME.github.io/REPOSITORY_NAME/`.
+
+Replace the placeholder GitHub link in `docs/index.html` with your repository URL. Deploy the full Flask application separately (for example, on Render) and add its link to the showcase when it is available.

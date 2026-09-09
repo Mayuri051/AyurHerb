@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Educational Wellness Profile – AyurHerb{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8">
+  <h2 class="fw-bold text-success"><i class="bi bi-clipboard2-pulse me-2"></i>Educational Wellness Profile</h2>
+  <p class="text-muted">A four-question learning exercise based on traditional dosha concepts. It is not a medical assessment.</p>
+  {% if result %}<div class="alert alert-success"><strong>Indicative pattern: {{ result.indicative_dosha }}</strong><br><span class="small">Vata: {{ result.scores.Vata }}, Pitta: {{ result.scores.Pitta }}, Kapha: {{ result.scores.Kapha }}. Discuss any health concern with a qualified professional.</span></div>{% endif %}
+  <form method="post" class="ayur-card p-4 bg-white shadow-sm">
+    <div class="mb-3"><label class="form-label fw-semibold">Body frame</label><select class="form-select" name="body_frame" required><option value="">Choose one</option><option value="light">Light / lean</option><option value="medium">Medium</option><option value="solid">Solid / broad</option></select></div>
+    <div class="mb-3"><label class="form-label fw-semibold">Typical skin feel</label><select class="form-select" name="skin" required><option value="">Choose one</option><option value="dry">Dry</option><option value="warm">Warm / sensitive</option><option value="soft">Soft / smooth</option></select></div>
+    <div class="mb-3"><label class="form-label fw-semibold">Appetite pattern</label><select class="form-select" name="appetite" required><option value="">Choose one</option><option value="irregular">Irregular</option><option value="strong">Strong</option><option value="steady">Steady</option></select></div>
+    <div class="mb-4"><label class="form-label fw-semibold">Typical response to stress</label><select class="form-select" name="stress_response" required><option value="">Choose one</option><option value="anxious">Anxious / restless</option><option value="irritable">Irritable / intense</option><option value="calm">Calm / withdrawn</option></select></div>
+    <button class="btn btn-ayur-primary" type="submit">View educational result</button>
+  </form>
+</div></div>
+{% endblock %}

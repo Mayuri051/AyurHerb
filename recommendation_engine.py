@@ -146,6 +146,7 @@ class AyurvedicRecommender:
                 "allergies": row.get("Allergies (Food/Env)", "None reported"),
                 "patient_recommendations": row.get("Patient Recommendations", "Rest and hydration"),
                 "seasonal_variation": row.get("Seasonal Variation", "All seasons"),
+                "age_group": row.get("Age Group", "All ages"),
                 "source": "AyurGenixAI Clinical Knowledge Dataset"
             }
             results.append(result_item)

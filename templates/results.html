@@ -24,6 +24,15 @@
   </div>
 </div>
 
+{% if symptom_analysis.recognized_symptoms or symptom_analysis.applied_aliases or profile.age_group or profile.season or profile.dosha %}
+<div class="alert alert-light border mb-4 small">
+  <strong><i class="bi bi-cpu me-1"></i> What the system understood:</strong>
+  {% if symptom_analysis.recognized_symptoms %} recognized symptoms: {{ symptom_analysis.recognized_symptoms|join(', ') }}.{% endif %}
+  {% for alias in symptom_analysis.applied_aliases %} Interpreted “{{ alias.source }}” as “{{ alias.normalized_to }}”.{% endfor %}
+  {% if profile.age_group or profile.season or profile.dosha %} Optional context: {{ [profile.age_group, profile.season, profile.dosha]|reject('equalto', '')|join(' · ') }}.{% endif %}
+</div>
+{% endif %}
+
 <!-- CASE 1: EMERGENCY MEDICAL RED-FLAG DETECTED -->
 {% if is_emergency %}
 <div class="emergency-banner mb-4">
@@ -129,6 +138,12 @@
                   {% endfor %}
                 </div>
               {% endif %}
+            </div>
+
+            <div class="small p-3 border-start border-3 border-success bg-light rounded mb-3">
+              <strong><i class="bi bi-lightbulb me-1"></i>Why this reference appeared</strong>
+              <div>{{ item.explanation.symptom_evidence|join(' · ') }}</div>
+              {% if item.explanation.context_matches %}<div class="text-muted">Also aligns with: {{ item.explanation.context_matches|join(', ') }}.</div>{% endif %}
             </div>
 
             <!-- Grid of Ayurvedic Recommendations -->

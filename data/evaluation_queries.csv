@@ -1,0 +1,6 @@
+query,expected_condition
+cough and sore throat,Cough
+headache and migraine,Migraine
+indigestion acidity bloating,Indigestion
+joint pain and stiffness,Arthritis
+fever with shivering,Fever

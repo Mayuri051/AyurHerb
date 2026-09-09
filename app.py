@@ -6,13 +6,18 @@ Description: Core web application integrating the Ayurvedic recommendation engin
 """
 
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from uuid import uuid4
+from flask import Flask, render_template, request, redirect, url_for, flash
+from werkzeug.utils import secure_filename
 from recommendation_engine import AyurvedicRecommender, SIMILARITY_THRESHOLD
 from safety import evaluate_safety
+from intelligence import enrich_results, normalize_symptoms, profile_from_form, score_dosha
+from plant_identifier import PlantImageIdentifier, allowed_image, validate_image
 import database as db
 
 app = Flask(__name__)
-app.secret_key = "ayurherb_secret_key_ds_lab_project"
+app.secret_key = os.environ.get("AYURHERB_SECRET_KEY", "development-only-change-me")
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
 # Initialize SQLite database
 db.init_db()
@@ -21,6 +26,9 @@ db.init_db()
 base_dir = os.path.dirname(os.path.abspath(__file__))
 data_path = os.path.join(base_dir, "data", "ayurgenixai_cleaned.csv")
 recommender = AyurvedicRecommender(data_path)
+upload_dir = os.path.join(base_dir, "instance", "uploads")
+os.makedirs(upload_dir, exist_ok=True)
+plant_identifier = PlantImageIdentifier(os.path.join(base_dir, "models", "ayurvedic_plant_classifier"))
 
 
 @app.route("/")
@@ -45,6 +53,16 @@ def symptom_checker():
     )
 
 
+@app.route("/wellness-profile", methods=["GET", "POST"])
+def wellness_profile():
+    """Educational questionnaire; it is not a diagnostic assessment."""
+    result = None
+    if request.method == "POST":
+        answers = {key: request.form.get(key, "") for key in ("body_frame", "skin", "appetite", "stress_response")}
+        result = score_dosha(answers)
+    return render_template("wellness_profile.html", result=result)
+
+
 @app.route("/analyze", methods=["POST"])
 def analyze_symptoms():
     """
@@ -56,6 +74,7 @@ def analyze_symptoms():
     5. Render results page.
     """
     query = request.form.get("symptoms", "").strip()
+    profile = profile_from_form(request.form)
 
     if not query:
         flash("Please enter or select at least one symptom to analyze.", "warning")
@@ -64,37 +83,33 @@ def analyze_symptoms():
     # Step 1: Safety & Emergency Triage
     safety_result = evaluate_safety(query)
     if safety_result["is_emergency"]:
-        # Log emergency event into SQLite
-        db.log_search(
-            query=query,
-            top_condition="Emergency Medical Warning Triggered",
-            similarity_score=0.0,
-            results_count=0,
-            safety_triggered=True
-        )
+        if request.form.get("save_history") == "yes":
+            db.log_search(query=query, top_condition="Emergency Medical Warning Triggered",
+                          similarity_score=0.0, results_count=0, safety_triggered=True)
         return render_template(
             "results.html",
             query=query,
             is_emergency=True,
             safety=safety_result,
             results=[],
-            threshold=SIMILARITY_THRESHOLD
+            threshold=SIMILARITY_THRESHOLD,
+            symptom_analysis={"recognized_symptoms": [], "applied_aliases": []},
+            profile=profile,
         )
 
-    # Step 2: TF-IDF Vectorization & Cosine Similarity Match
-    results = recommender.recommend(query=query, top_k=6, threshold=SIMILARITY_THRESHOLD)
+    # Step 2: Normalize common multilingual phrases then retrieve dataset references.
+    symptom_analysis = normalize_symptoms(query)
+    normalized_query = symptom_analysis["normalized_query"]
+    results = recommender.recommend(query=normalized_query, top_k=6, threshold=SIMILARITY_THRESHOLD)
+    results = enrich_results(results, profile, symptom_analysis["recognized_symptoms"])
 
     top_condition = results[0]["disease"] if results else "No Match"
     top_score = results[0]["similarity_score"] if results else 0.0
 
-    # Step 3: Log query event to SQLite database
-    db.log_search(
-        query=query,
-        top_condition=top_condition,
-        similarity_score=top_score,
-        results_count=len(results),
-        safety_triggered=False
-    )
+    # Step 3: Save only when the visitor explicitly opts in to local history.
+    if request.form.get("save_history") == "yes":
+        db.log_search(query=query, top_condition=top_condition, similarity_score=top_score,
+                      results_count=len(results), safety_triggered=False)
 
     return render_template(
         "results.html",
@@ -102,8 +117,45 @@ def analyze_symptoms():
         is_emergency=False,
         safety=safety_result,
         results=results,
-        threshold=SIMILARITY_THRESHOLD
+        threshold=SIMILARITY_THRESHOLD,
+        symptom_analysis=symptom_analysis,
+        profile=profile,
     )
+
+
+@app.route("/plant-identifier", methods=["GET", "POST"])
+def plant_identifier_page():
+    """Accept a plant photograph and pass it only to an installed local model."""
+    prediction = None
+    if request.method == "POST":
+        image = request.files.get("plant_image")
+        if not image or not image.filename:
+            flash("Choose a JPG, PNG, or WEBP plant image first.", "warning")
+        elif not allowed_image(image.filename):
+            flash("Only JPG, JPEG, PNG, and WEBP files are accepted.", "warning")
+        else:
+            extension = image.filename.rsplit(".", 1)[1].lower()
+            filename = f"{uuid4().hex}.{extension}"
+            image_path = os.path.join(upload_dir, secure_filename(filename))
+            image.save(image_path)
+            try:
+                if validate_image(image_path):
+                    prediction = plant_identifier.identify(image_path)
+                else:
+                    flash("That file is not a valid decodable image.", "warning")
+            finally:
+                # Images are transient input: delete after local inference.
+                try:
+                    os.remove(image_path)
+                except OSError:
+                    pass
+    return render_template("plant_identifier.html", prediction=prediction, model_ready=plant_identifier.is_ready)
+
+
+@app.errorhandler(413)
+def file_too_large(_error):
+    flash("The image is too large. Maximum upload size is 5 MB.", "warning")
+    return redirect(url_for("plant_identifier_page"))
 
 
 @app.route("/herbs")

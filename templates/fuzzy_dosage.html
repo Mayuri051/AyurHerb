@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Fuzzy Logic Dosage Calculator – AyurHerb{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+  <div class="col-12">
+    <div class="card p-4 shadow-sm border-0 bg-white">
+      <div class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-semibold mb-2" style="width: fit-content;">
+        <i class="bi bi-sliders me-1"></i> Syllabus Unit III: Fuzzy Logic & Mamdani Control Systems
+      </div>
+      <h2 class="fw-bold text-success-emphasis mb-1">Fuzzy Logic Formulation & Dosage Calculator</h2>
+      <p class="text-muted mb-0">
+        Calculates Ayurvedic treatment potency ($0-100\%$) and carrier vehicle (<em>Anupana</em>) using continuous fuzzy membership functions and Mamdani centroid defuzzification.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Input Form Column -->
+  <div class="col-lg-5">
+    <div class="card shadow-sm border-0 p-4 bg-white h-100">
+      <h5 class="fw-bold text-success mb-3"><i class="bi bi-gear-wide-connected me-2"></i>Patient Clinical Inputs</h5>
+      <form method="POST" action="{{ url_for('fuzzy_dosage') }}">
+        
+        <!-- Severity Slider -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold d-flex justify-content-between">
+            <span>Symptom Severity (0-10)</span>
+            <span id="sevVal" class="badge bg-success">{{ inputs.severity }}</span>
+          </label>
+          <input type="range" class="form-range" min="0" max="10" step="0.5" id="severity" name="severity" value="{{ inputs.severity }}" oninput="document.getElementById('sevVal').innerText = this.value">
+          <div class="d-flex justify-content-between text-muted small">
+            <span>Mild (0-3)</span>
+            <span>Moderate (4-7)</span>
+            <span>Severe (8-10)</span>
+          </div>
+        </div>
+
+        <!-- Chronicity Slider -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold d-flex justify-content-between">
+            <span>Duration / Chronicity (Days)</span>
+            <span id="durVal" class="badge bg-success">{{ inputs.duration }} days</span>
+          </label>
+          <input type="range" class="form-range" min="1" max="60" step="1" id="duration" name="duration" value="{{ inputs.duration }}" oninput="document.getElementById('durVal').innerText = this.value + ' days'">
+          <div class="d-flex justify-content-between text-muted small">
+            <span>Acute (1-7d)</span>
+            <span>Subacute (8-25d)</span>
+            <span>Chronic (26-60d)</span>
+          </div>
+        </div>
+
+        <!-- Agni / Digestion Capacity -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold d-flex justify-content-between">
+            <span>Patient Agni / Digestive Strength (0-10)</span>
+            <span id="agniVal" class="badge bg-success">{{ inputs.agni }}</span>
+          </label>
+          <input type="range" class="form-range" min="0" max="10" step="0.5" id="agni" name="agni" value="{{ inputs.agni }}" oninput="document.getElementById('agniVal').innerText = this.value">
+          <div class="d-flex justify-content-between text-muted small">
+            <span>Manda (Weak)</span>
+            <span>Sama (Balanced)</span>
+            <span>Tikshna (Intense)</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+          <i class="bi bi-calculator me-2"></i> Compute Fuzzy Inference
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Results Output Column -->
+  <div class="col-lg-7">
+    {% if result %}
+    <div class="card shadow-sm border-0 p-4 bg-white h-100">
+      <h5 class="fw-bold text-success mb-3"><i class="bi bi-clipboard2-pulse me-2"></i>Fuzzy Inference Output</h5>
+      
+      <!-- Potency Index Meter -->
+      <div class="p-3 bg-light rounded border mb-3 text-center">
+        <small class="text-muted text-uppercase fw-semibold d-block">Formulation Potency Index (Defuzzified Centroid)</small>
+        <div class="display-5 fw-bold text-success my-1">{{ result.potency_index }} <span class="fs-4">/ 100</span></div>
+        <div class="progress mt-2" style="height: 10px;">
+          <div class="progress-bar bg-success" role="progressbar" style="width: {{ result.potency_index }}%;"></div>
+        </div>
+      </div>
+
+      <!-- Clinical Prescription Details -->
+      <div class="list-group list-group-flush mb-3">
+        <div class="list-group-item px-0 py-2">
+          <strong class="text-dark d-block">Ayurvedic Regimen Category:</strong>
+          <span class="badge bg-success-subtle text-success fs-6">{{ result.regimen }}</span>
+        </div>
+        <div class="list-group-item px-0 py-2">
+          <strong class="text-dark d-block">Dosage Guideline:</strong>
+          <span class="text-muted">{{ result.dosage_advice }}</span>
+        </div>
+        <div class="list-group-item px-0 py-2">
+          <strong class="text-dark d-block">Recommended Formulation Form (Kalpana):</strong>
+          <span class="text-muted">{{ result.recommended_formulation_type }}</span>
+        </div>
+        <div class="list-group-item px-0 py-2">
+          <strong class="text-dark d-block">Carrier Medium (Anupana):</strong>
+          <span class="text-success fw-semibold">{{ result.recommended_anupana }}</span>
+        </div>
+      </div>
+
+      <!-- Fuzzy Memberships Debug Box -->
+      <div class="p-3 bg-white rounded border small">
+        <strong class="text-dark d-block mb-2"><i class="bi bi-code-slash me-1"></i>Fuzzified Membership Grades:</strong>
+        <div class="row g-2">
+          <div class="col-md-4">
+            <span class="text-muted">Severity:</span><br>
+            Mild: {{ result.fuzzy_memberships.severity.mild }} | Mod: {{ result.fuzzy_memberships.severity.moderate }} | Sev: {{ result.fuzzy_memberships.severity.severe }}
+          </div>
+          <div class="col-md-4">
+            <span class="text-muted">Chronicity:</span><br>
+            Acute: {{ result.fuzzy_memberships.chronicity.acute }} | Sub: {{ result.fuzzy_memberships.chronicity.subacute }} | Chr: {{ result.fuzzy_memberships.chronicity.chronic }}
+          </div>
+          <div class="col-md-4">
+            <span class="text-muted">Agni:</span><br>
+            Manda: {{ result.fuzzy_memberships.agni.manda }} | Sama: {{ result.fuzzy_memberships.agni.sama }} | Tikshna: {{ result.fuzzy_memberships.agni.tikshna }}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="card shadow-sm border-0 p-5 bg-white text-center h-100 d-flex align-items-center justify-content-center">
+      <i class="bi bi-sliders text-success display-3 mb-3"></i>
+      <h5 class="fw-bold text-dark">Ready to Compute</h5>
+      <p class="text-muted">Adjust patient severity, chronicity, and digestive strength on the left and click <strong>Compute Fuzzy Inference</strong>.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

@@ -161,6 +161,28 @@ class AyurHerbTestSuite(unittest.TestCase):
         self.assertIn(b"Cosine Similarity", response.data)
         print("  [PASS] Test 14: About page loads successfully.")
 
+    def test_15_ml_evaluation_page(self):
+        """Test GET /ml-evaluation (Unit V)."""
+        response = self.client.get("/ml-evaluation")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Machine Learning Performance", response.data)
+        self.assertIn(b"Random Forest", response.data)
+        print("  [PASS] Test 15: ML Model Evaluation dashboard renders successfully.")
+
+    def test_16_fuzzy_dosage_page(self):
+        """Test GET and POST /fuzzy-dosage (Unit III)."""
+        response_get = self.client.get("/fuzzy-dosage")
+        self.assertEqual(response_get.status_code, 200)
+        self.assertIn(b"Fuzzy Logic Formulation & Dosage Calculator", response_get.data)
+
+        response_post = self.client.post(
+            "/fuzzy-dosage",
+            data={"severity": "6.5", "duration": "10", "agni": "5.0"}
+        )
+        self.assertEqual(response_post.status_code, 200)
+        self.assertIn(b"Potency Index", response_post.data)
+        print("  [PASS] Test 16: Fuzzy Logic Dosage calculator computes inferences accurately.")
+
 
 if __name__ == "__main__":
     print("=" * 70)

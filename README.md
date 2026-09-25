@@ -91,14 +91,30 @@ Generates 11 publication-grade charts saved in `static/plots/`:
 ```
 ayurherb/
 │
-├── app.py                      # Flask main entrypoint & web routes
-├── preprocess.py               # Data cleaning, normalization & feature engineering
+├── app.py                      # Multi-paradigm Flask healthcare web application
+├── ml_classifier.py            # Supervised Machine Learning (Random Forest & AdaBoost) [Unit V]
+├── evaluate_classification.py  # Model benchmarking & Confusion Matrix suite [Unit V, Exp 11]
+├── fuzzy_engine.py             # Fuzzy Logic & Mamdani Dosage Controller [Unit III]
+├── bayesian_engine.py          # Bayesian Network Probabilistic Inference [Unit I]
+├── plant_identifier.py         # Vision / CNN Deep Learning hook [Unit IV]
+├── recommendation_engine.py    # TF-IDF & Cosine Similarity IR engine [Unit VI]
+├── preprocess.py               # Data cleaning & NLP feature engineering
 ├── eda.py                      # Exploratory Data Analysis & plot generator
-├── recommendation_engine.py    # TF-IDF & Cosine Similarity recommendation engine
 ├── safety.py                   # Medical red-flag detection & emergency triage
 ├── database.py                 # SQLite database helper for search history
+├── demo_tests.py               # Comprehensive 7-stage verification test runner
 ├── requirements.txt            # Project dependencies
 ├── README.md                   # Complete documentation
+│
+├── practicals/                 # Standalone syllabus lab experiments (Exp 1 - 12)
+│   ├── exp1_bayesian_inferencing.py
+│   ├── exp2_cognitive_healthcare.py
+│   ├── exp6_7_fuzzy_memberships_and_sets.py
+│   ├── exp8_fuzzy_control_system.py
+│   ├── exp9_deep_learning_mnist_image.py
+│   ├── exp10_adaboost_and_random_forest.py
+│   ├── exp11_evaluation_of_classification.py
+│   └── exp12_mini_project_pipeline.py
 │
 ├── data/
 │   ├── AyurGenixAI_Dataset.csv # Original raw dataset
@@ -109,25 +125,33 @@ ayurherb/
 │   ├── index.html
 │   ├── symptom_checker.html
 │   ├── results.html
+│   ├── ml_evaluation.html      # Supervised ML evaluation & benchmarking view
+│   ├── fuzzy_dosage.html       # Interactive Fuzzy Logic dosage calculator
+│   ├── plant_identifier.html
 │   ├── herbs.html
-│   ├── herb_detail.html
 │   ├── conditions.html
-│   ├── condition_detail.html
-│   ├── analytics.html
-│   ├── history.html
-│   └── about.html
+│   └── analytics.html
 │
-├── static/
-│   ├── css/
-│   │   └── style.css           # Custom healthcare styling & design tokens
-│   ├── js/
-│   │   └── script.js           # Interactive symptom tag toggling & sync
-│   └── plots/                  # 11 Generated high-resolution EDA figures
-│       ├── disease_frequency.png
-│       ├── severity_distribution.png
-│       ├── age_distribution.png
-│       ├── gender_distribution.png
-│       ├── seasonal_variation.png
+└── static/
+    ├── css/style.css           # Custom healthcare styling
+    ├── js/script.js            # Interactive symptom tag sync
+    └── plots/                  # Generated EDA & ML evaluation plots
+```
+
+---
+
+## 🏛️ Syllabus & Lab Experiment Mapping
+
+| Syllabus Unit | Lab Experiment | AyurHerb Implementation Module |
+|---|---|---|
+| **Unit I: Uncertainty in AI** | Exp 1: Inferencing with Bayesian Network | [`bayesian_engine.py`](file:///c:/Users/DELL/.gemini/antigravity/scratch/ayurherb/bayesian_engine.py) & `practicals/exp1_bayesian_inferencing.py` |
+| **Unit II: Cognitive Computing** | Exp 2: Cognitive Healthcare Application | AyurHerb Web App (`app.py`) & `practicals/exp2_cognitive_healthcare.py` |
+| **Unit III: Fuzzy Logic** | Exp 6, 7: Membership Functions & Set Properties | `practicals/exp6_7_fuzzy_memberships_and_sets.py` |
+| **Unit III: Fuzzy Logic** | Exp 8: Design of Fuzzy Control System | [`fuzzy_engine.py`](file:///c:/Users/DELL/.gemini/antigravity/scratch/ayurherb/fuzzy_engine.py) & `practicals/exp8_fuzzy_control_system.py` |
+| **Unit IV: Deep Learning** | Exp 9: Image Classification / MNIST Digit System | [`plant_identifier.py`](file:///c:/Users/DELL/.gemini/antigravity/scratch/ayurherb/plant_identifier.py) & `practicals/exp9_deep_learning_mnist_image.py` |
+| **Unit V: Advanced ML** | Exp 10: AdaBoost & Random Forests | [`ml_classifier.py`](file:///c:/Users/DELL/.gemini/antigravity/scratch/ayurherb/ml_classifier.py) & `practicals/exp10_adaboost_and_random_forest.py` |
+| **Unit V: Advanced ML** | Exp 11: Evaluation of Classification Algorithms | [`evaluate_classification.py`](file:///c:/Users/DELL/.gemini/antigravity/scratch/ayurherb/evaluate_classification.py) & `practicals/exp11_evaluation_of_classification.py` |
+| **Unit VI: Mini-Project** | Exp 12: Text-based Healthcare DS App | Complete AyurHerb Full-Stack Multi-Paradigm App |
 │       ├── dosha_distribution.png
 │       ├── top_herbs.png
 │       ├── top_remedies.png

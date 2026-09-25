@@ -80,6 +80,48 @@
   </div>
 </div>
 
+<!-- Multi-Paradigm AI & ML Inference Summary (Syllabus Units I, III, V) -->
+<div class="row g-3 mb-4">
+  {% if ml_result and ml_result.status == 'success' %}
+  <div class="col-md-4">
+    <div class="card p-3 shadow-sm border-0 border-start border-success border-4 h-100 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <small class="text-success text-uppercase fw-bold"><i class="bi bi-tree me-1"></i> Random Forest (Unit V)</small>
+        <span class="badge bg-success">{{ ml_result.rf_confidence }}%</span>
+      </div>
+      <div class="fw-bold fs-5 text-dark">{{ ml_result.rf_prediction }}</div>
+      <small class="text-muted">AdaBoost Vote: <strong>{{ ml_result.ada_prediction }}</strong> ({{ ml_result.ada_confidence }}%)</small>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if bayesian_result and bayesian_result.status == 'success' %}
+  <div class="col-md-4">
+    <div class="card p-3 shadow-sm border-0 border-start border-primary border-4 h-100 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <small class="text-primary text-uppercase fw-bold"><i class="bi bi-diagram-3 me-1"></i> Bayesian Network (Unit I)</small>
+        <span class="badge bg-primary">{{ bayesian_result.top_probability }}%</span>
+      </div>
+      <div class="fw-bold fs-5 text-dark">{{ bayesian_result.top_condition }}</div>
+      <small class="text-muted">Exact belief propagation under uncertainty</small>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if fuzzy_result %}
+  <div class="col-md-4">
+    <div class="card p-3 shadow-sm border-0 border-start border-warning border-4 h-100 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <small class="text-warning-emphasis text-uppercase fw-bold"><i class="bi bi-sliders me-1"></i> Fuzzy Dosage (Unit III)</small>
+        <span class="badge bg-warning-subtle text-dark">{{ fuzzy_result.potency_index }}/100</span>
+      </div>
+      <div class="fw-bold fs-6 text-dark">{{ fuzzy_result.regimen }}</div>
+      <small class="text-muted">Anupana: <strong>{{ fuzzy_result.recommended_anupana }}</strong></small>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
 <!-- CASE 2: RESULTS FOUND -->
 {% if results %}
   <div class="d-flex justify-content-between align-items-center mb-3">

@@ -1,8 +1,13 @@
 """
 AyurHerb - Flask Web Application (app.py)
 Author: Data Science Team
-Description: Core web application integrating the Ayurvedic recommendation engine,
-             safety triage, SQLite search history, and exploratory data analysis dashboard.
+Description: Multi-paradigm cognitive healthcare web application integrating:
+             1. NLP & TF-IDF Semantic Retrieval
+             2. Supervised Machine Learning (Random Forest & AdaBoost) [Unit V]
+             3. Fuzzy Logic Dosage Controller (Mamdani FIS) [Unit III]
+             4. Bayesian Network Probabilistic Inference [Unit I]
+             5. Clinical Safety & Emergency Triage
+             6. SQLite Search History Audit
 """
 
 import os
@@ -13,6 +18,9 @@ from recommendation_engine import AyurvedicRecommender, SIMILARITY_THRESHOLD
 from safety import evaluate_safety
 from intelligence import enrich_results, normalize_symptoms, profile_from_form, score_dosha
 from plant_identifier import PlantImageIdentifier, allowed_image, validate_image
+from ml_classifier import AyurvedicMLClassifier
+from fuzzy_engine import AyurvedicFuzzyInferenceSystem
+from bayesian_engine import AyurvedicBayesianNetwork
 import database as db
 
 app = Flask(__name__)
@@ -22,24 +30,39 @@ app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 # Initialize SQLite database
 db.init_db()
 
-# Initialize Recommendation Engine
+# Paths & Core Engines
 base_dir = os.path.dirname(os.path.abspath(__file__))
 data_path = os.path.join(base_dir, "data", "ayurgenixai_cleaned.csv")
-recommender = AyurvedicRecommender(data_path)
 upload_dir = os.path.join(base_dir, "instance", "uploads")
 os.makedirs(upload_dir, exist_ok=True)
+
+# 1. Recommendation Engine (TF-IDF + Cosine Similarity)
+recommender = AyurvedicRecommender(data_path)
+
+# 2. Supervised ML Classifier (Random Forest & AdaBoost - Unit V)
+ml_classifier = AyurvedicMLClassifier(data_path)
+
+# 3. Fuzzy Logic Inference Engine (Mamdani FIS - Unit III)
+fuzzy_engine = AyurvedicFuzzyInferenceSystem()
+
+# 4. Bayesian Probabilistic Network (Unit I)
+bayesian_engine = AyurvedicBayesianNetwork(data_path)
+
+# 5. Plant Identifier (Deep Learning / Vision hook - Unit IV)
 plant_identifier = PlantImageIdentifier(os.path.join(base_dir, "models", "ayurvedic_plant_classifier"))
 
 
 @app.route("/")
 def index():
-    """Home landing page with system overview and dataset statistics."""
+    """Home landing page with system overview, dataset stats, and ML highlights."""
     metrics = recommender.get_summary_metrics()
     popular_symptoms = recommender.get_popular_symptoms_list()[:8]
+    ml_metrics = ml_classifier.metrics_
     return render_template(
         "index.html",
         metrics=metrics,
-        popular_symptoms=popular_symptoms
+        popular_symptoms=popular_symptoms,
+        ml_metrics=ml_metrics
     )
 
 
@@ -55,7 +78,7 @@ def symptom_checker():
 
 @app.route("/wellness-profile", methods=["GET", "POST"])
 def wellness_profile():
-    """Educational questionnaire; it is not a diagnostic assessment."""
+    """Educational questionnaire; non-diagnostic assessment."""
     result = None
     if request.method == "POST":
         answers = {key: request.form.get(key, "") for key in ("body_frame", "skin", "appetite", "stress_response")}
@@ -66,21 +89,34 @@ def wellness_profile():
 @app.route("/analyze", methods=["POST"])
 def analyze_symptoms():
     """
-    Process entered symptoms:
-    1. Check for empty or invalid query.
-    2. Evaluate clinical safety & emergency red-flags.
-    3. Run TF-IDF & Cosine Similarity recommendation engine.
-    4. Log search history into SQLite.
-    5. Render results page.
+    Multi-stage cognitive & ML analysis pipeline:
+    1. Safety & Emergency Triage
+    2. Multilingual Normalization
+    3. TF-IDF Semantic Ranking
+    4. Random Forest & AdaBoost ML Classification (Unit V)
+    5. Bayesian Probabilistic Inference (Unit I)
+    6. Fuzzy Logic Dosage Calculation (Unit III)
+    7. SQLite Logging
     """
     query = request.form.get("symptoms", "").strip()
     profile = profile_from_form(request.form)
+
+    # Extract optional fuzzy tuning parameters
+    try:
+        severity_val = float(request.form.get("severity_score", 5.0))
+    except (ValueError, TypeError):
+        severity_val = 5.0
+
+    try:
+        duration_val = float(request.form.get("duration_days", 7.0))
+    except (ValueError, TypeError):
+        duration_val = 7.0
 
     if not query:
         flash("Please enter or select at least one symptom to analyze.", "warning")
         return redirect(url_for("symptom_checker"))
 
-    # Step 1: Safety & Emergency Triage
+    # Stage 1: Safety & Emergency Triage
     safety_result = evaluate_safety(query)
     if safety_result["is_emergency"]:
         if request.form.get("save_history") == "yes":
@@ -95,18 +131,39 @@ def analyze_symptoms():
             threshold=SIMILARITY_THRESHOLD,
             symptom_analysis={"recognized_symptoms": [], "applied_aliases": []},
             profile=profile,
+            ml_result=None,
+            bayesian_result=None,
+            fuzzy_result=None
         )
 
-    # Step 2: Normalize common multilingual phrases then retrieve dataset references.
+    # Stage 2: Normalization & TF-IDF Retrieval
     symptom_analysis = normalize_symptoms(query)
     normalized_query = symptom_analysis["normalized_query"]
     results = recommender.recommend(query=normalized_query, top_k=6, threshold=SIMILARITY_THRESHOLD)
     results = enrich_results(results, profile, symptom_analysis["recognized_symptoms"])
 
-    top_condition = results[0]["disease"] if results else "No Match"
+    # Stage 3: Supervised ML Classification (Random Forest & AdaBoost)
+    ml_result = ml_classifier.predict(normalized_query, top_k=3)
+
+    # Stage 4: Bayesian Network Probabilistic Inference (Unit I)
+    bayesian_result = bayesian_engine.infer(
+        symptoms_query=normalized_query,
+        dosha_evidence=profile.get("dosha"),
+        season_evidence=profile.get("season"),
+        top_k=3
+    )
+
+    # Stage 5: Fuzzy Logic Dosage & Formulation Potency (Unit III)
+    fuzzy_result = fuzzy_engine.infer(
+        severity_score=severity_val,
+        duration_days=duration_val,
+        agni_score=6.0
+    )
+
+    top_condition = results[0]["disease"] if results else (ml_result.get("rf_prediction") or "No Direct Match")
     top_score = results[0]["similarity_score"] if results else 0.0
 
-    # Step 3: Save only when the visitor explicitly opts in to local history.
+    # Stage 6: SQLite Search History Logging
     if request.form.get("save_history") == "yes":
         db.log_search(query=query, top_condition=top_condition, similarity_score=top_score,
                       results_count=len(results), safety_triggered=False)
@@ -120,12 +177,66 @@ def analyze_symptoms():
         threshold=SIMILARITY_THRESHOLD,
         symptom_analysis=symptom_analysis,
         profile=profile,
+        ml_result=ml_result,
+        bayesian_result=bayesian_result,
+        fuzzy_result=fuzzy_result
     )
+
+
+@app.route("/ml-evaluation")
+def ml_evaluation():
+    """Machine Learning & Ensemble Classification Benchmark Dashboard (Unit V)."""
+    metrics = ml_classifier.metrics_
+    features = ml_classifier.get_feature_importance(top_n=12)
+    
+    plots = [
+        {
+            "filename": "ml_model_comparison.png",
+            "title": "Supervised Model Comparison (Unit V)",
+            "description": "Accuracy, Precision, Recall, and F1-Scores across Random Forest, AdaBoost, Decision Tree, and Naive Bayes."
+        },
+        {
+            "filename": "ml_feature_importance.png",
+            "title": "Random Forest Symptom Feature Importance",
+            "description": "Gini-importance scores of key symptom vocabulary nodes extracted by the tree ensemble."
+        },
+        {
+            "filename": "ml_confusion_matrix.png",
+            "title": "Confusion Matrix for Top Classes",
+            "description": "True vs. Predicted class distribution showing classification accuracy across frequent conditions."
+        }
+    ]
+    return render_template(
+        "ml_evaluation.html",
+        metrics=metrics,
+        features=features,
+        plots=plots
+    )
+
+
+@app.route("/fuzzy-dosage", methods=["GET", "POST"])
+def fuzzy_dosage():
+    """Interactive Fuzzy Logic Ayurvedic Dosage & Potency Calculator (Unit III)."""
+    result = None
+    inputs = {"severity": 5.0, "duration": 7.0, "agni": 5.5}
+    if request.method == "POST":
+        try:
+            inputs["severity"] = float(request.form.get("severity", 5.0))
+            inputs["duration"] = float(request.form.get("duration", 7.0))
+            inputs["agni"] = float(request.form.get("agni", 5.5))
+        except (ValueError, TypeError):
+            pass
+        result = fuzzy_engine.infer(
+            severity_score=inputs["severity"],
+            duration_days=inputs["duration"],
+            agni_score=inputs["agni"]
+        )
+    return render_template("fuzzy_dosage.html", result=result, inputs=inputs)
 
 
 @app.route("/plant-identifier", methods=["GET", "POST"])
 def plant_identifier_page():
-    """Accept a plant photograph and pass it only to an installed local model."""
+    """Deep Learning vision hook for plant leaf identification (Unit IV)."""
     prediction = None
     if request.method == "POST":
         image = request.files.get("plant_image")
@@ -144,7 +255,6 @@ def plant_identifier_page():
                 else:
                     flash("That file is not a valid decodable image.", "warning")
             finally:
-                # Images are transient input: delete after local inference.
                 try:
                     os.remove(image_path)
                 except OSError:
@@ -259,7 +369,6 @@ def analytics():
     """Exploratory Data Analysis Dashboard showcasing dataset metrics and generated charts."""
     metrics = recommender.get_summary_metrics()
     
-    # List of generated plots with descriptions
     plot_items = [
         {
             "filename": "disease_frequency.png",
@@ -342,12 +451,11 @@ def clear_history():
 
 @app.route("/about")
 def about():
-    """About page explaining Data Science methodology, TF-IDF, dataset, and safety."""
+    """About page explaining Data Science methodology, syllabus coverage, and architecture."""
     metrics = recommender.get_summary_metrics()
     return render_template("about.html", metrics=metrics)
 
 
 if __name__ == "__main__":
-    # Host on 127.0.0.1:5000
-    print("Starting AyurHerb Web Server at http://127.0.0.1:5000 ...")
+    print("Starting AyurHerb Multi-Paradigm Healthcare Server at http://127.0.0.1:5000 ...")
     app.run(debug=True, host="127.0.0.1", port=5000)

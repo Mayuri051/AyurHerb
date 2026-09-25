@@ -49,21 +49,24 @@
 
         <div class="row g-3 mb-4 p-3 rounded-3 border bg-light-subtle">
           <div class="col-12">
-            <h6 class="fw-bold text-success mb-1"><i class="bi bi-sliders me-1"></i> Optional wellness context</h6>
-            <p class="small text-muted mb-0">This only explains relevant dataset records; it does not diagnose or prescribe.</p>
+            <h6 class="fw-bold text-success mb-1"><i class="bi bi-sliders me-1"></i> Optional Multi-Paradigm & Fuzzy Context</h6>
+            <p class="small text-muted mb-0">Powers Fuzzy Logic Dosage calculation (Unit III) and Bayesian belief inference (Unit I).</p>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label small fw-semibold" for="age_group">Age group</label>
             <select class="form-select" id="age_group" name="age_group"><option value="">Prefer not to say</option><option>0-18 years</option><option>19-30 years</option><option>30-60 years</option><option>60+ years</option></select>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label small fw-semibold" for="season">Current season</label>
             <select class="form-select" id="season" name="season"><option value="">Not selected</option><option>Winter</option><option>Summer</option><option>Rainy</option><option>All seasons</option></select>
           </div>
-          <div class="col-md-4">
-            <label class="form-label small fw-semibold" for="dosha">Wellness/dosha context</label>
+          <div class="col-md-3">
+            <label class="form-label small fw-semibold" for="dosha">Dosha context</label>
             <select class="form-select" id="dosha" name="dosha"><option value="">Not selected</option><option>Vata</option><option>Pitta</option><option>Kapha</option><option>Vata, Pitta</option><option>Pitta, Kapha</option><option>Vata, Kapha</option><option>Tridosha</option></select>
-            <a class="small" href="{{ url_for('wellness_profile') }}">Take the educational questionnaire</a>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small fw-semibold" for="severity_score">Severity (0-10) [Fuzzy]</label>
+            <input type="number" class="form-control" id="severity_score" name="severity_score" min="1" max="10" step="0.5" value="5.0">
           </div>
         </div>
 

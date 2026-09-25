@@ -4,13 +4,14 @@ __pycache__/
 *$py.class
 
 # Virtual environments
-venv/
-env/
-ENV/
-.venv/
+venv*/
+env*/
+ENV*/
+.venv*/
 
-# Local databases
-instance/*.db
+# Local databases & uploads
+instance/
+*.db
 *.sqlite3
 
 # OS generated files

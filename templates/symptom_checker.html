@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Symptom Checker – AyurHerb{% endblock %}
+{% block title %}Ayurvedic Symptom Checker & Health Assessment – AyurHerb{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -9,10 +9,10 @@
     <!-- Header -->
     <div class="text-center mb-4">
       <h2 class="fw-bold text-success d-flex align-items-center justify-content-center gap-2">
-        <i class="bi bi-heart-pulse-fill text-danger"></i> Ayurvedic Symptom Checker
+        <i class="bi bi-heart-pulse-fill text-danger"></i> Ayurvedic Symptom Assessment
       </h2>
       <p class="text-muted">
-        Describe what you are experiencing in plain English, or tap the common symptom chips below to match relevant traditional remedies.
+        Describe how you are feeling in simple words, or click the symptom tags below to find matching Ayurvedic conditions, safe herbs, and home preparation guides.
       </p>
     </div>
 
@@ -20,23 +20,22 @@
     <div class="alert alert-warning border-warning-subtle d-flex gap-3 align-items-start mb-4 shadow-sm">
       <i class="bi bi-exclamation-triangle-fill text-warning fs-4 mt-1"></i>
       <div>
-        <h6 class="fw-bold text-dark mb-1">Important Educational & Medical Notice</h6>
+        <h6 class="fw-bold text-dark mb-1">Important Safety Notice</h6>
         <p class="small text-dark mb-0">
-          This tool provides educational information based on the available dataset and traditional Ayurvedic references. <strong>It does not provide a medical diagnosis or prescribe treatment.</strong>
-          If you are experiencing severe difficulty breathing, crushing chest pain, uncontrolled bleeding, or loss of consciousness, please seek immediate emergency medical care.
+          This system provides traditional Ayurvedic wellness insights for non-acute conditions. <strong>If you have severe chest pain, sudden breathing difficulty, stroke signs, or severe trauma, seek immediate emergency medical care.</strong>
         </p>
       </div>
     </div>
 
     <!-- Symptom Input Form Card -->
-    <div class="ayur-card p-4 p-md-5 mb-4 bg-white shadow-sm">
+    <div class="card p-4 p-md-5 mb-4 bg-white shadow-sm border-0">
       <form action="{{ url_for('analyze_symptoms') }}" method="POST" id="symptom-form">
         
         <!-- Interactive Symptom Tag Selection -->
         <div class="mb-4">
           <label class="form-label fw-bold text-dark d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-tags-fill text-success me-1"></i> Tap to Select Common Symptoms:</span>
-            <span class="small text-muted fw-normal">Click to toggle chips</span>
+            <span><i class="bi bi-tags-fill text-success me-1"></i> Quick Tap Common Symptoms:</span>
+            <span class="small text-muted fw-normal">Click chips to add</span>
           </label>
           <div class="p-3 bg-light rounded-3 border" id="symptom-chips-container">
             {% for symptom in popular_symptoms %}
@@ -47,30 +46,7 @@
           </div>
         </div>
 
-        <div class="row g-3 mb-4 p-3 rounded-3 border bg-light-subtle">
-          <div class="col-12">
-            <h6 class="fw-bold text-success mb-1"><i class="bi bi-sliders me-1"></i> Optional Multi-Paradigm & Fuzzy Context</h6>
-            <p class="small text-muted mb-0">Powers Fuzzy Logic Dosage calculation (Unit III) and Bayesian belief inference (Unit I).</p>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="age_group">Age group</label>
-            <select class="form-select" id="age_group" name="age_group"><option value="">Prefer not to say</option><option>0-18 years</option><option>19-30 years</option><option>30-60 years</option><option>60+ years</option></select>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="season">Current season</label>
-            <select class="form-select" id="season" name="season"><option value="">Not selected</option><option>Winter</option><option>Summer</option><option>Rainy</option><option>All seasons</option></select>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="dosha">Dosha context</label>
-            <select class="form-select" id="dosha" name="dosha"><option value="">Not selected</option><option>Vata</option><option>Pitta</option><option>Kapha</option><option>Vata, Pitta</option><option>Pitta, Kapha</option><option>Vata, Kapha</option><option>Tridosha</option></select>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="severity_score">Severity (0-10) [Fuzzy]</label>
-            <input type="number" class="form-control" id="severity_score" name="severity_score" min="1" max="10" step="0.5" value="5.0">
-          </div>
-        </div>
-
-        <!-- Textarea for manual / enriched input -->
+        <!-- Textarea for manual input -->
         <div class="mb-4">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <label for="symptoms-input" class="form-label fw-bold text-dark mb-0">
@@ -85,79 +61,188 @@
             id="symptoms-input"
             name="symptoms"
             rows="4"
-            placeholder="e.g. I have cough, sore throat and mild chest congestion with fatigue..."
+            placeholder="e.g. I have a dry cough, sore throat, and mild fever with fatigue for the past 3 days..."
             required
           ></textarea>
           <div class="form-text mt-2">
-            <i class="bi bi-info-circle me-1"></i> Tip: You can type natural sentences or combine multiple symptoms separated by commas.
+            <i class="bi bi-info-circle me-1"></i> You can type naturally in plain English or Hinglish/Marathi (e.g., khansi, bukhar, pet dard).
+          </div>
+        </div>
+
+        <!-- Optional Personalization Box with Instant Dosha Quiz Modal -->
+        <div class="row g-3 mb-4 p-3 rounded-3 border bg-light">
+          <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <h6 class="fw-bold text-success mb-1"><i class="bi bi-person-gear me-1"></i> Personalize Your Guidance (Optional)</h6>
+              <p class="small text-muted mb-0">Helps tailor herbal preparation strength and diet advice to your constitution.</p>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#doshaQuizModal">
+              <i class="bi bi-question-circle me-1"></i> Don't know your Dosha? Take 30s Quiz
+            </button>
+          </div>
+
+          <!-- Dosha Selector -->
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold" for="dosha">Your Ayurvedic Body Type (Dosha)</label>
+            <select class="form-select" id="dosha" name="dosha">
+              <option value="">I don't know / General</option>
+              <option value="Vata">Vata (Air/Movement - Dry/Light)</option>
+              <option value="Pitta">Pitta (Fire/Metabolism - Warm/Sharp)</option>
+              <option value="Kapha">Kapha (Earth/Water - Heavy/Cold)</option>
+              <option value="Vata, Pitta">Vata-Pitta</option>
+              <option value="Pitta, Kapha">Pitta-Kapha</option>
+              <option value="Vata, Kapha">Vata-Kapha</option>
+              <option value="Tridosha">Tridoshic (Balanced)</option>
+            </select>
+          </div>
+
+          <!-- Age Group -->
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold" for="age_group">Age Group</label>
+            <select class="form-select" id="age_group" name="age_group">
+              <option value="">General (All ages)</option>
+              <option value="0-18 years">Child / Youth (0-18)</option>
+              <option value="19-30 years">Young Adult (19-30)</option>
+              <option value="30-60 years">Adult (30-60)</option>
+              <option value="60+ years">Senior (60+)</option>
+            </select>
+          </div>
+
+          <!-- Season -->
+          <div class="col-md-4">
+            <label class="form-label small fw-semibold" for="season">Current Season</label>
+            <select class="form-select" id="season" name="season">
+              <option value="">Current Climate</option>
+              <option value="Winter">Winter (Shishira / Hemanta)</option>
+              <option value="Summer">Summer (Grishma)</option>
+              <option value="Rainy">Monsoon / Rainy (Varsha)</option>
+              <option value="All seasons">General Season</option>
+            </select>
           </div>
         </div>
 
         <!-- Example Prompts -->
         <div class="mb-4">
-          <span class="small text-muted fw-bold me-2">Try examples:</span>
-          <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('I have cough, sore throat and chest congestion.'); return false;">
+          <span class="small text-muted fw-bold me-2">Try common examples:</span>
+          <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('I have cough, sore throat and mild chest congestion.'); return false;">
             "Cough & sore throat"
           </a>
-          <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('Severe headache with migraine and light sensitivity.'); return false;">
+          <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('Severe headache with migraine and nausea.'); return false;">
             "Headache & migraine"
           </a>
           <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('Indigestion, stomach acidity, bloating after eating.'); return false;">
             "Indigestion & acidity"
           </a>
-          <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('Joint stiffness, knee pain and morning swelling.'); return false;">
+          <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('Joint stiffness, knee pain and morning discomfort.'); return false;">
             "Joint pain & stiffness"
           </a>
         </div>
 
         <!-- Submit Button -->
-        <div class="text-center pt-2">
-          <button type="submit" class="btn btn-ayur-primary btn-lg px-5 shadow">
-            <i class="bi bi-stars me-2"></i> Analyze Symptoms
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-success btn-lg py-3 fw-bold shadow-sm" id="submit-btn">
+            <i class="bi bi-clipboard2-pulse-fill me-2"></i> Get Ayurvedic Assessment & Herb Guidance
           </button>
-          <div class="form-check d-inline-flex align-items-center ms-md-3 mt-3 mt-md-0">
-            <input class="form-check-input" type="checkbox" value="yes" id="save-history" name="save_history">
-            <label class="form-check-label small ms-1" for="save-history">Save this search locally</label>
-          </div>
         </div>
-      </form>
-    </div>
 
-    <!-- Informational Steps -->
-    <div class="row g-3">
-      <div class="col-md-4">
-        <div class="p-3 bg-white rounded-3 border text-center">
-          <div class="fw-bold text-success mb-1">1. NLP Processing</div>
-          <p class="small text-muted mb-0">Input text is tokenized, stripped of noise, and transformed into a TF-IDF vector.</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="p-3 bg-white rounded-3 border text-center">
-          <div class="fw-bold text-success mb-1">2. Similarity Scoring</div>
-          <p class="small text-muted mb-0">Cosine similarity measures alignment with 446 authenticated Ayurvedic records.</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="p-3 bg-white rounded-3 border text-center">
-          <div class="fw-bold text-success mb-1">3. Wellness Advice</div>
-          <p class="small text-muted mb-0">Presents herbs, formulations, dosha balance, and lifestyle recommendations.</p>
-        </div>
-      </div>
+      </form>
     </div>
 
   </div>
 </div>
-{% endblock %}
 
-{% block extra_scripts %}
+<!-- Instant 30-Second Dosha Discovery Modal -->
+<div class="modal fade" id="doshaQuizModal" tabindex="-1" aria-labelledby="doshaQuizModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title fw-bold" id="doshaQuizModalLabel">
+          <i class="bi bi-flower1 me-2"></i> Quick 30-Second Dosha Discovery
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="small text-muted mb-3">
+          Select the option in each category that best describes your natural body tendencies:
+        </p>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">1. Your Body Frame:</label>
+          <select class="form-select form-select-sm" id="quiz_frame">
+            <option value="Vata">Slender, thin, light bones (Vata)</option>
+            <option value="Pitta">Medium build, athletic, moderate muscles (Pitta)</option>
+            <option value="Kapha">Broad, solid, sturdy, gains weight easily (Kapha)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">2. Your Skin Nature:</label>
+          <select class="form-select form-select-sm" id="quiz_skin">
+            <option value="Vata">Dry, rough, tends to get cold easily (Vata)</option>
+            <option value="Pitta">Warm, sensitive, prone to redness/sweat (Pitta)</option>
+            <option value="Kapha">Smooth, soft, oily or cool (Kapha)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">3. Your Digestion & Appetite:</label>
+          <select class="form-select form-select-sm" id="quiz_agni">
+            <option value="Vata">Irregular (sometimes hungry, sometimes forget) (Vata)</option>
+            <option value="Pitta">Very strong, irritable if meals are delayed (Pitta)</option>
+            <option value="Kapha">Slow, steady, can easily skip meals (Kapha)</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">4. Your Mind & Stress Reaction:</label>
+          <select class="form-select form-select-sm" id="quiz_mind">
+            <option value="Vata">Quick, creative, tends to worry or get anxious (Vata)</option>
+            <option value="Pitta">Sharp, ambitious, can become frustrated or intense (Pitta)</option>
+            <option value="Kapha">Calm, peaceful, patient, slow to change (Kapha)</option>
+          </select>
+        </div>
+
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success fw-bold" onclick="applyQuickDosha()">
+          <i class="bi bi-check2-circle me-1"></i> Set My Dosha & Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-  function setQuery(text) {
-    const input = document.getElementById("symptoms-input");
-    if (input) {
-      input.value = text;
-      // Trigger event to sync chips
-      input.dispatchEvent(new Event('input'));
+function setQuery(text) {
+  document.getElementById('symptoms-input').value = text;
+}
+
+function applyQuickDosha() {
+  const choices = [
+    document.getElementById('quiz_frame').value,
+    document.getElementById('quiz_skin').value,
+    document.getElementById('quiz_agni').value,
+    document.getElementById('quiz_mind').value
+  ];
+  
+  const counts = { "Vata": 0, "Pitta": 0, "Kapha": 0 };
+  choices.forEach(c => { if(counts[c] !== undefined) counts[c]++; });
+  
+  let dominant = "Vata";
+  let maxCount = -1;
+  for (const [k, v] of Object.entries(counts)) {
+    if (v > maxCount) {
+      maxCount = v;
+      dominant = k;
     }
   }
+  
+  document.getElementById('dosha').value = dominant;
+  
+  const modalElement = document.getElementById('doshaQuizModal');
+  const modal = bootstrap.Modal.getInstance(modalElement);
+  if (modal) modal.hide();
+}
 </script>
 {% endblock %}

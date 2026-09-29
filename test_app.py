@@ -36,8 +36,8 @@ class AyurHerbTestSuite(unittest.TestCase):
         """Test GET /symptom-checker returns 200 and contains form."""
         response = self.client.get("/symptom-checker")
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Symptom Assessment", response.data)
-        self.assertIn(b"Get Ayurvedic Assessment", response.data)
+        self.assertIn(b"Symptom Checker", response.data)
+        self.assertIn(b"Analyze Symptoms", response.data)
         print("  [PASS] Test 2: Symptom checker page loads successfully.")
 
     def test_03_recommendation_cough_query(self):
@@ -48,8 +48,8 @@ class AyurHerbTestSuite(unittest.TestCase):
             follow_redirects=True
         )
         self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Symptom Similarity Score", response.data)
         self.assertIn(b"Cough", response.data)
-        self.assertIn(b"Recommended Herbs", response.data)
         print("  [PASS] Test 3: Recommendation engine returns valid cough/sore throat matches.")
 
     def test_04_recommendation_headache_query(self):
@@ -71,7 +71,7 @@ class AyurHerbTestSuite(unittest.TestCase):
             follow_redirects=True
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Immediate Emergency Medical Attention Advised", response.data)
+        self.assertIn(b"URGENT: Immediate Medical Evaluation Recommended", response.data)
         self.assertIn(b"Severe Breathing Difficulty", response.data)
         print("  [PASS] Test 5: Safety system correctly intercepts red-flag emergency symptoms.")
 
@@ -94,7 +94,7 @@ class AyurHerbTestSuite(unittest.TestCase):
             follow_redirects=True
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"No Direct Ayurvedic Match Found", response.data)
+        self.assertIn(b"No Sufficiently Similar Record Found", response.data)
         print("  [PASS] Test 7: Unrelated query gracefully returns no match notice.")
 
     def test_08_herbs_explorer(self):

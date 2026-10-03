@@ -12,7 +12,7 @@
         <i class="bi bi-heart-pulse-fill text-danger"></i> Ayurvedic Symptom Checker
       </h2>
       <p class="text-muted">
-        Describe what you are experiencing in plain English, or tap the common symptom chips below to match relevant traditional remedies.
+        Describe what you are experiencing in plain language, or tap the common symptom chips below to match relevant traditional Ayurvedic remedies.
       </p>
     </div>
 
@@ -22,7 +22,7 @@
       <div>
         <h6 class="fw-bold text-dark mb-1">Important Educational & Medical Notice</h6>
         <p class="small text-dark mb-0">
-          This tool provides educational information based on the available dataset and traditional Ayurvedic references. <strong>It does not provide a medical diagnosis or prescribe treatment.</strong>
+          This tool provides educational wellness information based on traditional Ayurvedic clinical records. <strong>It does not provide a formal medical diagnosis or replace medical care.</strong>
           If you are experiencing severe difficulty breathing, crushing chest pain, uncontrolled bleeding, or loss of consciousness, please seek immediate emergency medical care.
         </p>
       </div>
@@ -47,25 +47,69 @@
           </div>
         </div>
 
-        <div class="row g-3 mb-4 p-3 rounded-3 border bg-light-subtle">
-          <div class="col-12">
-            <h6 class="fw-bold text-success mb-1"><i class="bi bi-sliders me-1"></i> Optional Multi-Paradigm & Fuzzy Context</h6>
-            <p class="small text-muted mb-0">Powers Fuzzy Logic Dosage calculation (Unit III) and Bayesian belief inference (Unit I).</p>
+        <!-- Personalization & Dosha Context -->
+        <div class="row g-3 mb-4 p-3 rounded-3 border bg-light">
+          <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <h6 class="fw-bold text-success mb-1">
+                <i class="bi bi-person-gear me-1"></i> Personalize Your Guidance (Optional)
+              </h6>
+              <p class="small text-muted mb-0">
+                Helps tailor herbal preparation strength, dosha alignment, and diet recommendations.
+              </p>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-success fw-semibold" data-bs-toggle="modal" data-bs-target="#doshaQuizModal">
+              <i class="bi bi-patch-question-fill me-1"></i> Don't know your Dosha? Take 30s Quiz
+            </button>
           </div>
+
+          <!-- Dosha Selection -->
           <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="age_group">Age group</label>
-            <select class="form-select" id="age_group" name="age_group"><option value="">Prefer not to say</option><option>0-18 years</option><option>19-30 years</option><option>30-60 years</option><option>60+ years</option></select>
+            <label class="form-label small fw-semibold" for="dosha">
+              Your Body Type (Dosha)
+            </label>
+            <select class="form-select" id="dosha" name="dosha">
+              <option value="" selected>I don't know (General Analysis)</option>
+              <option value="Vata">Vata (Air & Space — Light, Dry, Agile)</option>
+              <option value="Pitta">Pitta (Fire & Water — Warm, Sharp, Intense)</option>
+              <option value="Kapha">Kapha (Earth & Water — Sturdy, Calm, Steady)</option>
+              <option value="Vata, Pitta">Vata-Pitta (Combination)</option>
+              <option value="Pitta, Kapha">Pitta-Kapha (Combination)</option>
+              <option value="Vata, Kapha">Vata-Kapha (Combination)</option>
+              <option value="Tridosha">Tridoshic (Balanced Constitution)</option>
+            </select>
+            <div id="dosha-hint" class="form-text text-success small d-none">
+              <i class="bi bi-check-circle-fill me-1"></i> <span id="dosha-hint-text"></span>
+            </div>
           </div>
+
+          <!-- Age Group Selection -->
           <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="season">Current season</label>
-            <select class="form-select" id="season" name="season"><option value="">Not selected</option><option>Winter</option><option>Summer</option><option>Rainy</option><option>All seasons</option></select>
+            <label class="form-label small fw-semibold" for="age_group">Age Group</label>
+            <select class="form-select" id="age_group" name="age_group">
+              <option value="">General (All ages)</option>
+              <option value="0-18 years">Child / Youth (0-18 years)</option>
+              <option value="19-30 years">Young Adult (19-30 years)</option>
+              <option value="30-60 years">Adult (30-60 years)</option>
+              <option value="60+ years">Senior (60+ years)</option>
+            </select>
           </div>
+
+          <!-- Season Selection -->
           <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="dosha">Dosha context</label>
-            <select class="form-select" id="dosha" name="dosha"><option value="">Not selected</option><option>Vata</option><option>Pitta</option><option>Kapha</option><option>Vata, Pitta</option><option>Pitta, Kapha</option><option>Vata, Kapha</option><option>Tridosha</option></select>
+            <label class="form-label small fw-semibold" for="season">Current Season</label>
+            <select class="form-select" id="season" name="season">
+              <option value="">General Season</option>
+              <option value="Winter">Winter (Cool / Dry)</option>
+              <option value="Summer">Summer (Hot / Sunny)</option>
+              <option value="Rainy">Monsoon / Rainy (Humid)</option>
+              <option value="All seasons">All Seasons</option>
+            </select>
           </div>
+
+          <!-- Severity Score Input -->
           <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="severity_score">Severity (0-10) [Fuzzy]</label>
+            <label class="form-label small fw-semibold" for="severity_score">Severity Level (1 to 10)</label>
             <input type="number" class="form-control" id="severity_score" name="severity_score" min="1" max="10" step="0.5" value="5.0">
           </div>
         </div>
@@ -126,25 +170,112 @@
     <!-- Informational Steps -->
     <div class="row g-3">
       <div class="col-md-4">
-        <div class="p-3 bg-white rounded-3 border text-center">
-          <div class="fw-bold text-success mb-1">1. NLP Processing</div>
-          <p class="small text-muted mb-0">Input text is tokenized, stripped of noise, and transformed into a TF-IDF vector.</p>
+        <div class="p-3 bg-white rounded-3 border text-center h-100">
+          <div class="fw-bold text-success mb-1"><i class="bi bi-pencil-square me-1"></i> 1. Symptom Input</div>
+          <p class="small text-muted mb-0">Describe what you are feeling in natural words or choose from popular health indicators.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="p-3 bg-white rounded-3 border text-center">
-          <div class="fw-bold text-success mb-1">2. Similarity Scoring</div>
-          <p class="small text-muted mb-0">Cosine similarity measures alignment with 446 authenticated Ayurvedic records.</p>
+        <div class="p-3 bg-white rounded-3 border text-center h-100">
+          <div class="fw-bold text-success mb-1"><i class="bi bi-search-heart me-1"></i> 2. Knowledge Matching</div>
+          <p class="small text-muted mb-0">Evaluates against 446 authenticated Ayurvedic clinical records and safety triage filters.</p>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="p-3 bg-white rounded-3 border text-center">
-          <div class="fw-bold text-success mb-1">3. Wellness Advice</div>
-          <p class="small text-muted mb-0">Presents herbs, formulations, dosha balance, and lifestyle recommendations.</p>
+        <div class="p-3 bg-white rounded-3 border text-center h-100">
+          <div class="fw-bold text-success mb-1"><i class="bi bi-capsule me-1"></i> 3. Herbal & Lifestyle Guidance</div>
+          <p class="small text-muted mb-0">Presents recommended medicinal herbs, safe home preparation, yoga, and dietary balance.</p>
         </div>
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- Instant 30-Second Dosha Discovery Modal -->
+<div class="modal fade" id="doshaQuizModal" tabindex="-1" aria-labelledby="doshaQuizModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title fw-bold" id="doshaQuizModalLabel">
+          <i class="bi bi-flower1 me-2"></i> 30-Second Ayurvedic Dosha Discovery
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="alert alert-success-subtle border-success-subtle mb-3 small">
+          <strong><i class="bi bi-info-circle me-1"></i> What is a Dosha?</strong>
+          In Ayurveda, your <em>Dosha</em> (Vata, Pitta, or Kapha) represents your primary physical and metabolic constitution. 
+          If you are unsure of your type, select the traits below that most closely describe you naturally:
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <label class="form-label small fw-bold text-dark">
+                <i class="bi bi-person-standing me-1 text-success"></i> 1. Body Frame & Build:
+              </label>
+              <select class="form-select form-select-sm" id="quiz_frame">
+                <option value="Vata">Slender, thin, light bones, hard to gain weight (Vata)</option>
+                <option value="Pitta">Medium build, athletic, moderate muscle tone (Pitta)</option>
+                <option value="Kapha">Broad, solid, sturdy, gains weight easily (Kapha)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <label class="form-label small fw-bold text-dark">
+                <i class="bi bi-thermometer-half me-1 text-danger"></i> 2. Skin & Temperature Sensitivity:
+              </label>
+              <select class="form-select form-select-sm" id="quiz_skin">
+                <option value="Vata">Dry, cool skin, easily gets cold, loves warmth (Vata)</option>
+                <option value="Pitta">Warm, sensitive skin, prone to redness/sweat, dislikes heat (Pitta)</option>
+                <option value="Kapha">Smooth, soft, cool/moist skin, comfortably tolerates cold (Kapha)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <label class="form-label small fw-bold text-dark">
+                <i class="bi bi-cup-hot me-1 text-warning"></i> 3. Digestion & Appetite (Agni):
+              </label>
+              <select class="form-select form-select-sm" id="quiz_agni">
+                <option value="Vata">Irregular appetite, prone to gas or bloating (Vata)</option>
+                <option value="Pitta">Very strong appetite, irritable if meals are delayed (Pitta)</option>
+                <option value="Kapha">Slow and steady digestion, can easily skip meals (Kapha)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <label class="form-label small fw-bold text-dark">
+                <i class="bi bi-moon-stars me-1 text-primary"></i> 4. Mind & Stress Reaction:
+              </label>
+              <select class="form-select form-select-sm" id="quiz_mind">
+                <option value="Vata">Active, creative mind, tends to worry or feel anxious (Vata)</option>
+                <option value="Pitta">Sharp, ambitious, can become impatient or irritable (Pitta)</option>
+                <option value="Kapha">Calm, peaceful, patient, steady and slow to stress (Kapha)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3 text-muted small">
+          <i class="bi bi-lightbulb me-1"></i> If you prefer general recommendations, you can always choose <strong>"I don't know"</strong> and the system will provide universal balancing advice.
+        </div>
+      </div>
+      <div class="modal-footer bg-light d-flex justify-content-between">
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setGeneralDosha()">
+          I don't know (Use General Analysis)
+        </button>
+        <button type="button" class="btn btn-success fw-bold px-4" onclick="applyQuickDosha()">
+          <i class="bi bi-check2-circle me-1"></i> Set My Dosha & Continue
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
@@ -155,9 +286,59 @@
     const input = document.getElementById("symptoms-input");
     if (input) {
       input.value = text;
-      // Trigger event to sync chips
       input.dispatchEvent(new Event('input'));
     }
+  }
+
+  function setGeneralDosha() {
+    const doshaSelect = document.getElementById('dosha');
+    if (doshaSelect) {
+      doshaSelect.value = "";
+    }
+    const hint = document.getElementById('dosha-hint');
+    if (hint) {
+      hint.classList.add('d-none');
+    }
+    const modalElement = document.getElementById('doshaQuizModal');
+    const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+    modal.hide();
+  }
+
+  function applyQuickDosha() {
+    const choices = [
+      document.getElementById('quiz_frame').value,
+      document.getElementById('quiz_skin').value,
+      document.getElementById('quiz_agni').value,
+      document.getElementById('quiz_mind').value
+    ];
+    
+    const counts = { "Vata": 0, "Pitta": 0, "Kapha": 0 };
+    choices.forEach(c => { if (counts[c] !== undefined) counts[c]++; });
+    
+    let dominant = "Vata";
+    let maxCount = -1;
+    for (const [k, v] of Object.entries(counts)) {
+      if (v > maxCount) {
+        maxCount = v;
+        dominant = k;
+      }
+    }
+    
+    const doshaSelect = document.getElementById('dosha');
+    if (doshaSelect) {
+      doshaSelect.value = dominant;
+    }
+
+    const hint = document.getElementById('dosha-hint');
+    const hintText = document.getElementById('dosha-hint-text');
+    if (hint && hintText) {
+      hintText.innerText = 'Identified: ' + dominant + ' Dosha';
+      hint.classList.remove('d-none');
+    }
+    
+    const modalElement = document.getElementById('doshaQuizModal');
+    const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+    modal.hide();
   }
 </script>
 {% endblock %}

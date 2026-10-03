@@ -107,10 +107,19 @@
             </select>
           </div>
 
-          <!-- Severity Score Input -->
+          <!-- Severity Level Selection -->
           <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="severity_score">Severity Level (1 to 10)</label>
-            <input type="number" class="form-control" id="severity_score" name="severity_score" min="1" max="10" step="0.5" value="5.0">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label small fw-semibold mb-0" for="severity_score">Symptom Discomfort</label>
+              <a href="#" class="text-success small text-decoration-none fw-semibold" data-bs-toggle="modal" data-bs-target="#severityHelpModal" title="How to choose severity?">
+                <i class="bi bi-question-circle"></i> Guide
+              </a>
+            </div>
+            <select class="form-select" id="severity_score" name="severity_score">
+              <option value="3.0">🟢 Mild (Light, manageable routine)</option>
+              <option value="5.5" selected>🟡 Moderate (Uncomfortable, slows you down)</option>
+              <option value="8.5">🔴 Significant (Intense, disrupts daily tasks)</option>
+            </select>
           </div>
         </div>
 
@@ -273,6 +282,65 @@
         </button>
         <button type="button" class="btn btn-success fw-bold px-4" onclick="applyQuickDosha()">
           <i class="bi bi-check2-circle me-1"></i> Set My Dosha & Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Severity Level Understanding Modal -->
+<div class="modal fade" id="severityHelpModal" tabindex="-1" aria-labelledby="severityHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title fw-bold" id="severityHelpModalLabel">
+          <i class="bi bi-thermometer-sun me-2"></i> How to Select Your Severity Level
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="small text-muted mb-3">
+          Severity helps our Ayurvedic engine determine whether to suggest gentle restorative teas, standard decoctions, or more concentrated herbal formulations:
+        </p>
+
+        <div class="p-3 bg-light rounded-3 border mb-3">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-success">🟢 Mild</span>
+            <strong class="text-dark">Slight / Early Stage</strong>
+          </div>
+          <p class="small text-secondary mb-0">
+            You notice minor discomfort (e.g. occasional cough, slight throat tickle, mild fatigue), but you can easily work, study, eat, and sleep without interruption.
+          </p>
+        </div>
+
+        <div class="p-3 bg-light rounded-3 border mb-3">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-warning text-dark">🟡 Moderate (Default)</span>
+            <strong class="text-dark">Noticeable & Uncomfortable</strong>
+          </div>
+          <p class="small text-secondary mb-0">
+            Symptoms are clearly noticeable (e.g. persistent cough, digestive discomfort, body ache). It slows you down, affects focus or sleep, and requires rest or home care.
+          </p>
+        </div>
+
+        <div class="p-3 bg-light rounded-3 border mb-3">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-danger">🔴 Significant / Severe</span>
+            <strong class="text-dark">Intense & Disruptive</strong>
+          </div>
+          <p class="small text-secondary mb-0">
+            Symptoms are severe and prevent you from performing daily tasks or sleeping peacefully.
+          </p>
+        </div>
+
+        <div class="alert alert-warning border-warning-subtle small mb-0">
+          <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+          <strong>Emergency note:</strong> If you have sudden severe chest pain, breathing difficulty, or loss of consciousness, do not rely on home remedies — contact emergency healthcare services immediately.
+        </div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-success fw-semibold" data-bs-dismiss="modal">
+          Understood, Close
         </button>
       </div>
     </div>

@@ -102,10 +102,18 @@ def analyze_symptoms():
     profile = profile_from_form(request.form)
 
     # Extract optional fuzzy tuning parameters
-    try:
-        severity_val = float(request.form.get("severity_score", 5.0))
-    except (ValueError, TypeError):
-        severity_val = 5.0
+    raw_sev = str(request.form.get("severity_score", "5.5")).strip().lower()
+    if "mild" in raw_sev or raw_sev in ["1", "2", "3"]:
+        severity_val = 3.0
+    elif "severe" in raw_sev or "high" in raw_sev or raw_sev in ["8", "9", "10"]:
+        severity_val = 8.5
+    elif "mod" in raw_sev or raw_sev in ["4", "5", "6", "7"]:
+        severity_val = 5.5
+    else:
+        try:
+            severity_val = float(raw_sev)
+        except (ValueError, TypeError):
+            severity_val = 5.5
 
     try:
         duration_val = float(request.form.get("duration_days", 7.0))

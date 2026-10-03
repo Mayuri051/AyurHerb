@@ -1,19 +1,162 @@
 {% extends "base.html" %}
-{% block title %}Ayurvedic Plant Image Identifier – AyurHerb{% endblock %}
+
+{% block title %}Medicinal Plant Scanner – AyurHerb{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center"><div class="col-lg-8">
-  <h2 class="fw-bold text-success"><i class="bi bi-leaf-fill me-2"></i>Ayurvedic Plant Image Identifier</h2>
-  <p class="text-secondary">Upload a clear photograph of one plant. The image is used only for this local analysis and is deleted afterward.</p>
-  <div class="alert alert-warning small"><strong>Safety note:</strong> Never consume or use a plant based only on an image prediction. Verify its identity with a qualified botanist or Ayurvedic practitioner.</div>
-  <form method="post" enctype="multipart/form-data" class="ayur-card p-4 bg-white shadow-sm mb-4">
-    <label for="plant_image" class="form-label fw-semibold">Plant photo (JPG, PNG, or WEBP; maximum 5 MB)</label>
-    <input class="form-control mb-3" id="plant_image" name="plant_image" type="file" accept="image/jpeg,image/png,image/webp" required>
-    <button class="btn btn-ayur-primary" type="submit"><i class="bi bi-search me-1"></i>Identify plant</button>
-  </form>
-  {% if not model_ready %}<div class="alert alert-info small"><strong>Model setup required:</strong> The upload workflow is active, but no trained local Ayurvedic-plant classifier is installed. Add a trained model and <code>labels.json</code> under <code>models/ayurvedic_plant_classifier</code> to activate prediction.</div>{% endif %}
-  {% if prediction %}
-    <div class="ayur-card p-4 bg-white shadow-sm"><h5 class="fw-bold">Analysis result</h5><p class="text-muted">{{ prediction.message }}</p>
-    {% for candidate in prediction.candidates %}<div class="border rounded p-3 mb-2"><strong class="text-success">{{ candidate.display_name }}</strong> <span class="badge bg-success">{{ candidate.confidence }}%</span><br><span class="small fst-italic">{{ candidate.botanical_name }}</span><p class="small mb-0 mt-2">{{ candidate.traditional_use }}</p></div>{% endfor %}</div>
-  {% endif %}
-</div></div>
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h2 class="fw-bold text-success d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-camera-fill text-success"></i> Medicinal Plant Scanner
+      </h2>
+      <p class="text-muted">
+        Upload or snap a photo of a medicinal plant leaf (e.g. Tulsi, Neem, Aloe Vera, Mint) to identify its botanical species and view safe traditional preparation methods.
+      </p>
+    </div>
+
+    <!-- Safety Warning -->
+    <div class="alert alert-warning border-warning-subtle d-flex gap-3 align-items-center mb-4 shadow-sm">
+      <i class="bi bi-shield-exclamation text-warning fs-3 flex-shrink-0"></i>
+      <div class="small">
+        <strong>Botanical Safety Note:</strong> Visual identification is intended for educational reference. Never ingest or apply an unknown wild plant without verification from a qualified Ayurvedic physician or botanist.
+      </div>
+    </div>
+
+    <!-- Image Upload Card -->
+    <div class="ayur-card p-4 p-md-5 bg-white shadow-sm mb-4">
+      <form method="POST" action="{{ url_for('plant_identifier_page') }}" enctype="multipart/form-data" id="plant-form">
+        <div class="mb-4 text-center">
+          <label for="plant_image" class="form-label fw-bold text-dark fs-5 d-block mb-3">
+            <i class="bi bi-cloud-arrow-up-fill text-success me-2"></i> Select or Drop Plant Photograph
+          </label>
+          <input 
+            class="form-control form-control-lg mx-auto" 
+            style="max-width: 500px;" 
+            id="plant_image" 
+            name="plant_image" 
+            type="file" 
+            accept="image/jpeg,image/png,image/webp" 
+            required
+            onchange="previewImage(event)"
+          >
+          <div class="form-text mt-2 text-muted">
+            Supported formats: JPG, PNG, WEBP (Max size: 5 MB)
+          </div>
+        </div>
+
+        <!-- Image Preview Container -->
+        <div id="image-preview-container" class="text-center mb-4 d-none">
+          <p class="small fw-semibold text-success mb-2"><i class="bi bi-eye me-1"></i> Selected Image Preview:</p>
+          <img id="image-preview" src="#" alt="Selected Plant" class="img-fluid rounded-4 shadow-sm border p-2 bg-light" style="max-height: 250px;">
+        </div>
+
+        <div class="text-center">
+          <button class="btn btn-success btn-lg px-5 shadow fw-bold" type="submit" id="scan-btn">
+            <i class="bi bi-search me-2"></i> Scan & Identify Plant
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Results Section -->
+    {% if prediction and prediction.candidates %}
+    <div class="mb-4">
+      <h4 class="fw-bold text-success mb-3 d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill text-success"></i> Botanical Identification Results
+      </h4>
+      <p class="text-muted small mb-4">{{ prediction.message }}</p>
+
+      <div class="row g-4">
+        {% for candidate in prediction.candidates %}
+        <div class="col-12">
+          <div class="ayur-card p-4 bg-white shadow-sm border {% if loop.first %}border-success border-2{% endif %}">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3 pb-3 border-bottom">
+              <div>
+                <span class="badge {% if loop.first %}bg-success{% else %}bg-secondary{% endif %} px-3 py-2 fs-6 mb-2">
+                  Match Confidence: {{ candidate.confidence }}%
+                </span>
+                <h3 class="fw-bold text-dark mb-1">{{ candidate.display_name }}</h3>
+                <div class="text-success fst-italic fw-medium">
+                  {{ candidate.botanical_name }} &bull; Sanskrit: <strong>{{ candidate.sanskrit_name }}</strong>
+                </div>
+              </div>
+              <a href="{{ url_for('herbs_explorer', q=candidate.display_name.split(' ')[0]) }}" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-book me-1"></i> View in Herb Explorer
+              </a>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 h-100">
+                  <h6 class="fw-bold text-success mb-2"><i class="bi bi-yin-yang me-1"></i> Dosha & Therapeutic Action:</h6>
+                  <p class="small text-dark mb-1"><strong>Dosha:</strong> {{ candidate.dosha_balance }}</p>
+                  <p class="small text-muted mb-0"><strong>Key Properties:</strong> {{ candidate.key_benefits }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="p-3 bg-light rounded-3 h-100">
+                  <h6 class="fw-bold text-success mb-2"><i class="bi bi-cup-hot me-1"></i> Safe Home Preparation:</h6>
+                  <p class="small text-dark mb-0">{{ candidate.safe_preparation }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="p-3 bg-light-subtle border rounded-3 h-100">
+                  <h6 class="fw-bold text-dark mb-1"><i class="bi bi-prescription2 me-1 text-primary"></i> Daily Dosage Guideline:</h6>
+                  <p class="small text-secondary mb-0">{{ candidate.dosage }}</p>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="p-3 bg-light-subtle border rounded-3 h-100">
+                  <h6 class="fw-bold text-dark mb-1"><i class="bi bi-exclamation-octagon me-1 text-danger"></i> Precautions & Safety:</h6>
+                  <p class="small text-secondary mb-0">{{ candidate.precautions }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Supported Plants Guide -->
+    <div class="p-4 bg-light rounded-4 border text-center">
+      <h6 class="fw-bold text-dark mb-2"><i class="bi bi-flower2 text-success me-1"></i> Supported Plants in Built-in Botanical Vision</h6>
+      <p class="small text-muted mb-3">Our botanical vision system is calibrated for common Ayurvedic herbs:</p>
+      <div class="d-flex flex-wrap gap-2 justify-content-center">
+        <span class="badge bg-white text-dark border p-2"><i class="bi bi-check2 text-success me-1"></i>Tulsi (Holy Basil)</span>
+        <span class="badge bg-white text-dark border p-2"><i class="bi bi-check2 text-success me-1"></i>Neem (Indian Lilac)</span>
+        <span class="badge bg-white text-dark border p-2"><i class="bi bi-check2 text-success me-1"></i>Aloe Vera (Ghritkumari)</span>
+        <span class="badge bg-white text-dark border p-2"><i class="bi bi-check2 text-success me-1"></i>Mint (Pudina)</span>
+        <span class="badge bg-white text-dark border p-2"><i class="bi bi-check2 text-success me-1"></i>Ashwagandha</span>
+        <span class="badge bg-white text-dark border p-2"><i class="bi bi-check2 text-success me-1"></i>Ginger (Adrak)</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function previewImage(event) {
+  const input = event.target;
+  const container = document.getElementById('image-preview-container');
+  const preview = document.getElementById('image-preview');
+  
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      container.classList.remove('d-none');
+    }
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
 {% endblock %}

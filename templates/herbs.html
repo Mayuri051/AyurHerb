@@ -10,7 +10,7 @@
         <i class="bi bi-tree-fill me-2"></i> Ayurvedic Herb Explorer (Dravya Vijnana)
       </h2>
       <p class="text-secondary small mb-0">
-        Browse and search medicinal herbs extracted from the AyurGenixAI clinical knowledge dataset.
+        Explore medicinal herbs and their traditional information from the AyurGenixAI dataset.
       </p>
     </div>
     <div>
@@ -65,44 +65,62 @@
         <div class="ayur-card p-4 h-100 d-flex flex-column justify-content-between bg-white shadow-sm">
           <div>
             <div class="d-flex justify-content-between align-items-start mb-2">
-              <h4 class="fw-bold text-success mb-0">{{ herb.name }}</h4>
+              <h4 class="fw-bold text-success mb-0">
+                {% if herb.name|lower == 'none specific' %}Unspecified{% else %}{{ herb.name }}{% endif %}
+              </h4>
               <span class="badge bg-light text-secondary border small">
                 {{ herb.count }} {% if herb.count == 1 %}case{% else %}cases{% endif %}
               </span>
-            </div>
-            
-            <div class="mb-3">
-              {% if herb.doshas %}
-                <span class="badge-dosha small d-inline-block mb-1">{{ herb.doshas }}</span>
-              {% endif %}
             </div>
 
             <div class="small mb-2">
               <strong class="text-dark">Associated Conditions:</strong>
               <div class="mt-1">
-                {% for cond in herb.conditions %}
+                {% for cond in herb.conditions[:3] %}
                   <span class="badge bg-secondary-subtle text-dark me-1 mb-1">{{ cond }}</span>
                 {% endfor %}
+                {% if herb.conditions|length > 3 %}
+                  <details class="condition-more d-inline-block">
+                    <summary class="badge bg-light text-success border me-1 mb-1">+ {{ herb.conditions|length - 3 }} more</summary>
+                    <div class="mt-1">
+                      {% for cond in herb.conditions[3:] %}
+                        <span class="badge bg-secondary-subtle text-dark me-1 mb-1">{{ cond }}</span>
+                      {% endfor %}
+                    </div>
+                  </details>
+                {% endif %}
               </div>
             </div>
 
-            <div class="small mb-2">
-              <strong class="text-dark">Formulations:</strong>
-              <span class="text-secondary d-block mt-0">{{ herb.formulations or 'Traditional decoctions' }}</span>
-            </div>
+            {% if herb.doshas %}
+              <div class="mb-2">
+                <span class="badge-dosha small d-inline-block">{{ herb.doshas }}</span>
+              </div>
+            {% endif %}
+
+            {% if herb.formulations %}
+              <details class="small mb-2">
+                <summary class="fw-semibold text-dark">Formulations listed in dataset</summary>
+                <span class="text-secondary d-block mt-1">{{ herb.formulations }}</span>
+              </details>
+            {% endif %}
 
             {% if herb.remedies %}
-              <div class="small mb-3">
-                <strong class="text-dark">Traditional Remedies:</strong>
-                <span class="text-muted d-block mt-0">{{ herb.remedies }}</span>
-              </div>
+              <details class="small mb-3">
+                <summary class="fw-semibold text-dark">Traditional Remedies</summary>
+                <span class="text-muted d-block mt-1">{{ herb.remedies }}</span>
+              </details>
             {% endif %}
           </div>
 
           <div class="pt-3 border-top mt-2">
-            <a href="{{ url_for('herb_detail', herb_name=herb.name) }}" class="btn btn-sm btn-outline-success w-100">
-              View Detailed Herb Profile <i class="bi bi-arrow-right ms-1"></i>
-            </a>
+            {% if herb.name|lower == 'none specific' %}
+              <span class="small text-muted">No herb specified in this dataset record.</span>
+            {% else %}
+              <a href="{{ url_for('herb_detail', herb_name=herb.name) }}" class="btn btn-sm btn-outline-success w-100">
+                View Detailed Herb Profile <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            {% endif %}
           </div>
         </div>
       </div>

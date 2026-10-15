@@ -12,7 +12,7 @@
         <i class="bi bi-heart-pulse-fill text-danger"></i> Ayurvedic Symptom Checker
       </h2>
       <p class="text-muted">
-        Describe what you are experiencing in plain language, or tap the common symptom chips below to match relevant traditional Ayurvedic remedies.
+        Select your symptoms to explore possible matching conditions and associated Ayurvedic herbs.
       </p>
     </div>
 
@@ -33,101 +33,37 @@
       <form action="{{ url_for('analyze_symptoms') }}" method="POST" id="symptom-form">
         
         <!-- Interactive Symptom Tag Selection -->
-        <div class="mb-4">
-          <label class="form-label fw-bold text-dark d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-tags-fill text-success me-1"></i> Tap to Select Common Symptoms:</span>
-            <span class="small text-muted fw-normal">Click to toggle chips</span>
+        <section class="symptom-step mb-4">
+          <div class="symptom-step-heading">
+            <span class="symptom-step-number">STEP 1</span>
+            <h4 class="fw-bold text-dark mb-1">What are you experiencing?</h4>
+            <p class="text-muted mb-3">Select one or more symptoms.</p>
+          </div>
+          <label class="form-label fw-bold text-dark" for="symptom-search">
+            <i class="bi bi-search text-success me-1"></i> Search symptoms
           </label>
+          <input type="search" class="form-control mb-3" id="symptom-search" placeholder="Search symptoms..." autocomplete="off">
+          <div class="small text-muted fw-bold mb-2">Popular symptoms:</div>
           <div class="p-3 bg-light rounded-3 border" id="symptom-chips-container">
             {% for symptom in popular_symptoms %}
-              <span class="symptom-chip" data-symptom="{{ symptom }}">
+              <span class="symptom-chip" data-symptom="{{ symptom }}" role="button" tabindex="0" aria-pressed="false">
                 <i class="bi bi-plus-lg me-1"></i>{{ symptom }}
               </span>
             {% endfor %}
           </div>
-        </div>
-
-        <!-- Personalization & Dosha Context -->
-        <div class="row g-3 mb-4 p-3 rounded-3 border bg-light">
-          <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-              <h6 class="fw-bold text-success mb-1">
-                <i class="bi bi-person-gear me-1"></i> Personalize Your Guidance (Optional)
-              </h6>
-              <p class="small text-muted mb-0">
-                Helps tailor herbal preparation strength, dosha alignment, and diet recommendations.
-              </p>
-            </div>
-            <button type="button" class="btn btn-sm btn-outline-success fw-semibold" data-bs-toggle="modal" data-bs-target="#doshaQuizModal">
-              <i class="bi bi-patch-question-fill me-1"></i> Don't know your Dosha? Take 30s Quiz
-            </button>
-          </div>
-
-          <!-- Dosha Selection -->
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="dosha">
-              Your Body Type (Dosha)
-            </label>
-            <select class="form-select" id="dosha" name="dosha">
-              <option value="" selected>I don't know (General Analysis)</option>
-              <option value="Vata">Vata (Air & Space — Light, Dry, Agile)</option>
-              <option value="Pitta">Pitta (Fire & Water — Warm, Sharp, Intense)</option>
-              <option value="Kapha">Kapha (Earth & Water — Sturdy, Calm, Steady)</option>
-              <option value="Vata, Pitta">Vata-Pitta (Combination)</option>
-              <option value="Pitta, Kapha">Pitta-Kapha (Combination)</option>
-              <option value="Vata, Kapha">Vata-Kapha (Combination)</option>
-              <option value="Tridosha">Tridoshic (Balanced Constitution)</option>
-            </select>
-            <div id="dosha-hint" class="form-text text-success small d-none">
-              <i class="bi bi-check-circle-fill me-1"></i> <span id="dosha-hint-text"></span>
+          <div class="selected-symptoms mt-3" aria-live="polite">
+            <strong class="small text-muted">Selected symptoms:</strong>
+            <div id="selected-symptoms-list" class="d-flex flex-wrap gap-2 mt-2">
+              <span class="small text-muted" id="selected-symptoms-empty">None selected yet</span>
             </div>
           </div>
-
-          <!-- Age Group Selection -->
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="age_group">Age Group</label>
-            <select class="form-select" id="age_group" name="age_group">
-              <option value="">General (All ages)</option>
-              <option value="0-18 years">Child / Youth (0-18 years)</option>
-              <option value="19-30 years">Young Adult (19-30 years)</option>
-              <option value="30-60 years">Adult (30-60 years)</option>
-              <option value="60+ years">Senior (60+ years)</option>
-            </select>
-          </div>
-
-          <!-- Season Selection -->
-          <div class="col-md-3">
-            <label class="form-label small fw-semibold" for="season">Current Season</label>
-            <select class="form-select" id="season" name="season">
-              <option value="">General Season</option>
-              <option value="Winter">Winter (Cool / Dry)</option>
-              <option value="Summer">Summer (Hot / Sunny)</option>
-              <option value="Rainy">Monsoon / Rainy (Humid)</option>
-              <option value="All seasons">All Seasons</option>
-            </select>
-          </div>
-
-          <!-- Severity Level Selection -->
-          <div class="col-md-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <label class="form-label small fw-semibold mb-0" for="severity_score">Symptom Discomfort</label>
-              <a href="#" class="text-success small text-decoration-none fw-semibold" data-bs-toggle="modal" data-bs-target="#severityHelpModal" title="How to choose severity?">
-                <i class="bi bi-question-circle"></i> Guide
-              </a>
-            </div>
-            <select class="form-select" id="severity_score" name="severity_score">
-              <option value="3.0">🟢 Mild (Light, manageable routine)</option>
-              <option value="5.5" selected>🟡 Moderate (Uncomfortable, slows you down)</option>
-              <option value="8.5">🔴 Significant (Intense, disrupts daily tasks)</option>
-            </select>
-          </div>
-        </div>
+        </section>
 
         <!-- Textarea for manual / enriched input -->
-        <div class="mb-4">
+        <div class="mb-4 symptom-description">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <label for="symptoms-input" class="form-label fw-bold text-dark mb-0">
-              <i class="bi bi-pencil-square text-success me-1"></i> Describe your symptoms in detail:
+              <i class="bi bi-pencil-square text-success me-1"></i> Or describe your symptoms
             </label>
             <button type="button" class="btn btn-sm btn-outline-secondary" id="clear-symptoms-btn">
               <i class="bi bi-x-circle me-1"></i> Clear Input
@@ -138,7 +74,7 @@
             id="symptoms-input"
             name="symptoms"
             rows="4"
-            placeholder="e.g. I have cough, sore throat and mild chest congestion with fatigue..."
+            placeholder="e.g. I have cough, sore throat and mild fever..."
             required
           ></textarea>
           <div class="form-text mt-2">
@@ -147,7 +83,7 @@
         </div>
 
         <!-- Example Prompts -->
-        <div class="mb-4">
+        <div class="mb-4 symptom-examples">
           <span class="small text-muted fw-bold me-2">Try examples:</span>
           <a href="#" class="badge bg-secondary-subtle text-dark text-decoration-none me-1 p-2" onclick="setQuery('I have cough, sore throat and chest congestion.'); return false;">
             "Cough & sore throat"
@@ -163,8 +99,79 @@
           </a>
         </div>
 
+        <!-- Personalization & Dosha Context -->
+        <details class="optional-personalization mb-4 p-3 rounded-3 border bg-light" id="optional-personalization">
+          <summary class="fw-bold text-success">
+            <i class="bi bi-person-gear me-1"></i> Optional Ayurvedic Personalization
+            <span class="small text-muted fw-normal ms-2">Add optional details</span>
+          </summary>
+          <div class="row g-3 mt-2">
+            <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <p class="small text-muted mb-0">
+                These details are optional. You can analyze symptoms without filling them in.
+              </p>
+              <button type="button" class="btn btn-sm btn-outline-success fw-semibold" data-bs-toggle="modal" data-bs-target="#doshaQuizModal">
+                <i class="bi bi-patch-question-fill me-1"></i> Don't know your Dosha? Take 30s Quiz
+              </button>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold" for="dosha">Your Body Type (Dosha)</label>
+              <select class="form-select" id="dosha" name="dosha">
+                <option value="" selected>I don't know (General Analysis)</option>
+                <option value="Vata">Vata (Air & Space — Light, Dry, Agile)</option>
+                <option value="Pitta">Pitta (Fire & Water — Warm, Sharp, Intense)</option>
+                <option value="Kapha">Kapha (Earth & Water — Sturdy, Calm, Steady)</option>
+                <option value="Vata, Pitta">Vata-Pitta (Combination)</option>
+                <option value="Pitta, Kapha">Pitta-Kapha (Combination)</option>
+                <option value="Vata, Kapha">Vata-Kapha (Combination)</option>
+                <option value="Tridosha">Tridoshic (Balanced Constitution)</option>
+              </select>
+              <div id="dosha-hint" class="form-text text-success small d-none">
+                <i class="bi bi-check-circle-fill me-1"></i> <span id="dosha-hint-text"></span>
+              </div>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold" for="age_group">Age Group</label>
+              <select class="form-select" id="age_group" name="age_group">
+                <option value="">General (All ages)</option>
+                <option value="0-18 years">Child / Youth (0-18 years)</option>
+                <option value="19-30 years">Young Adult (19-30 years)</option>
+                <option value="30-60 years">Adult (30-60 years)</option>
+                <option value="60+ years">Senior (60+ years)</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold" for="season">Current Season</label>
+              <select class="form-select" id="season" name="season">
+                <option value="">General Season</option>
+                <option value="Winter">Winter (Cool / Dry)</option>
+                <option value="Summer">Summer (Hot / Sunny)</option>
+                <option value="Rainy">Monsoon / Rainy (Humid)</option>
+                <option value="All seasons">All Seasons</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label small fw-semibold mb-0" for="severity_score">Symptom Discomfort</label>
+                <a href="#" class="text-success small text-decoration-none fw-semibold" data-bs-toggle="modal" data-bs-target="#severityHelpModal" title="How to choose severity?">
+                  <i class="bi bi-question-circle"></i> Guide
+                </a>
+              </div>
+              <select class="form-select" id="severity_score" name="severity_score">
+                <option value="3.0">🟢 Mild (Light, manageable routine)</option>
+                <option value="5.5" selected>🟡 Moderate (Uncomfortable, slows you down)</option>
+                <option value="8.5">🔴 Significant (Intense, disrupts daily tasks)</option>
+              </select>
+            </div>
+          </div>
+        </details>
+
         <!-- Submit Button -->
-        <div class="text-center pt-2">
+        <div class="text-center pt-2 symptom-submit">
           <button type="submit" class="btn btn-ayur-primary btn-lg px-5 shadow">
             <i class="bi bi-stars me-2"></i> Analyze Symptoms
           </button>
@@ -180,20 +187,20 @@
     <div class="row g-3">
       <div class="col-md-4">
         <div class="p-3 bg-white rounded-3 border text-center h-100">
-          <div class="fw-bold text-success mb-1"><i class="bi bi-pencil-square me-1"></i> 1. Symptom Input</div>
-          <p class="small text-muted mb-0">Describe what you are feeling in natural words or choose from popular health indicators.</p>
+          <div class="fw-bold text-success mb-1"><i class="bi bi-pencil-square me-1"></i> 1. Select Symptoms</div>
+          <p class="small text-muted mb-0">Choose symptoms or describe them in your own words.</p>
         </div>
       </div>
       <div class="col-md-4">
         <div class="p-3 bg-white rounded-3 border text-center h-100">
-          <div class="fw-bold text-success mb-1"><i class="bi bi-search-heart me-1"></i> 2. Knowledge Matching</div>
-          <p class="small text-muted mb-0">Evaluates against 446 authenticated Ayurvedic clinical records and safety triage filters.</p>
+          <div class="fw-bold text-success mb-1"><i class="bi bi-search-heart me-1"></i> 2. Find Matching Conditions</div>
+          <p class="small text-muted mb-0">Explore possible conditions matching the symptoms you entered.</p>
         </div>
       </div>
       <div class="col-md-4">
         <div class="p-3 bg-white rounded-3 border text-center h-100">
-          <div class="fw-bold text-success mb-1"><i class="bi bi-capsule me-1"></i> 3. Herbal & Lifestyle Guidance</div>
-          <p class="small text-muted mb-0">Presents recommended medicinal herbs, safe home preparation, yoga, and dietary balance.</p>
+          <div class="fw-bold text-success mb-1"><i class="bi bi-capsule me-1"></i> 3. Explore Associated Herbs</div>
+          <p class="small text-muted mb-0">View herbs and additional information recorded in the dataset.</p>
         </div>
       </div>
     </div>
@@ -408,5 +415,71 @@
     const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
     modal.hide();
   }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("symptom-search");
+    const chipContainer = document.getElementById("symptom-chips-container");
+    const selectedList = document.getElementById("selected-symptoms-list");
+    const symptomsInput = document.getElementById("symptoms-input");
+
+    function updateSelectedSymptoms() {
+      if (!chipContainer || !selectedList) return;
+      const selected = chipContainer.querySelectorAll(".symptom-chip.active");
+      chipContainer.querySelectorAll(".symptom-chip").forEach(function (chip) {
+        chip.setAttribute("aria-pressed", String(chip.classList.contains("active")));
+      });
+      selectedList.replaceChildren();
+
+      if (selected.length === 0) {
+        const emptyMessage = document.createElement("span");
+        emptyMessage.className = "small text-muted";
+        emptyMessage.textContent = "None selected yet";
+        selectedList.appendChild(emptyMessage);
+        return;
+      }
+
+      selected.forEach(function (chip) {
+        const selectedChip = document.createElement("span");
+        selectedChip.className = "tag-pill";
+        selectedChip.textContent = chip.getAttribute("data-symptom") || chip.textContent.trim();
+        selectedList.appendChild(selectedChip);
+      });
+    }
+
+    if (search && chipContainer) {
+      search.addEventListener("input", function () {
+        const searchTerm = this.value.trim().toLowerCase();
+        chipContainer.querySelectorAll(".symptom-chip").forEach(function (chip) {
+          const symptom = (chip.getAttribute("data-symptom") || chip.textContent).toLowerCase();
+          chip.classList.toggle("d-none", !symptom.includes(searchTerm));
+        });
+      });
+    }
+
+    if (chipContainer) {
+      chipContainer.addEventListener("click", function (event) {
+        if (event.target.closest(".symptom-chip")) {
+          window.setTimeout(updateSelectedSymptoms, 0);
+        }
+      });
+      chipContainer.addEventListener("keydown", function (event) {
+        if (event.target.classList.contains("symptom-chip") && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          event.target.click();
+        }
+      });
+    }
+
+    if (symptomsInput) {
+      symptomsInput.addEventListener("input", updateSelectedSymptoms);
+    }
+
+    const clearButton = document.getElementById("clear-symptoms-btn");
+    if (clearButton) {
+      clearButton.addEventListener("click", updateSelectedSymptoms);
+    }
+
+    updateSelectedSymptoms();
+  });
 </script>
 {% endblock %}

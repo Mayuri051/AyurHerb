@@ -29,7 +29,7 @@ Ayurveda is a comprehensive traditional healing philosophy based on balancing th
 5. **Condition & Disease Directory (`/conditions`, `/condition/<name>`)**: Comprehensive directory covering 360+ conditions with diagnostic tests, severity, lifestyle, and yoga therapy.
 6. **Visual Analytics Dashboard (`/analytics`)**: Interactive dashboard displaying 11 statistical EDA visualizations.
 7. **Emergency Red-Flag Safety System (`safety.py`)**: Intercepts emergency inputs (e.g. chest pain, severe breathing failure) and prioritizes emergency medical care advice.
-8. **Local SQLite History (`/history`)**: Tracks past searches locally with a 1-click history clearance utility.
+8. **Results / History (`/history`)**: Stores symptom checks and plant scans locally, with filters, detail views, per-item deletion, and history clearance.
 
 ---
 
@@ -44,7 +44,7 @@ The system is built on **`data/AyurGenixAI_Dataset.csv`** containing **446 recor
 
 ---
 
-## 5. Data Science & Machine Learning Methodology
+## 5. Data Science & NLP Methodology
 
 ### A. Preprocessing Pipeline (`preprocess.py`)
 - Standardizes inconsistent capitalization, whitespace, and delimiter formatting.
@@ -73,6 +73,8 @@ Generates 11 publication-grade charts saved in `static/plots/`:
    $$\text{Cosine Similarity}(\vec{u}, \vec{v}) = \frac{\vec{u} \cdot \vec{v}}{\|\vec{u}\| \|\vec{v}\|}$$
 3. **Threshold Filtering**: Configurable relevance threshold (`SIMILARITY_THRESHOLD = 0.12 - 0.15`) returns only meaningful, ranked matches.
 
+The Flask application does not train or run Random Forest or AdaBoost classifiers. Symptom results come from the transparent TF-IDF/cosine-similarity recommender and the separate Bayesian and fuzzy guidance components. The standalone classifier and syllabus experiments remain available for coursework but are not loaded by the web application.
+
 ---
 
 ## 6. Technology Stack
@@ -91,8 +93,8 @@ Generates 11 publication-grade charts saved in `static/plots/`:
 ```
 ayurherb/
 │
-├── app.py                      # Multi-paradigm Flask healthcare web application
-├── ml_classifier.py            # Supervised Machine Learning (Random Forest & AdaBoost) [Unit V]
+├── app.py                      # Flask wellness recommendation and plant scan application
+├── ml_classifier.py            # Standalone coursework classifier (not used by the Flask app)
 ├── evaluate_classification.py  # Model benchmarking & Confusion Matrix suite [Unit V, Exp 11]
 ├── fuzzy_engine.py             # Fuzzy Logic & Mamdani Dosage Controller [Unit III]
 ├── bayesian_engine.py          # Bayesian Network Probabilistic Inference [Unit I]
@@ -101,7 +103,7 @@ ayurherb/
 ├── preprocess.py               # Data cleaning & NLP feature engineering
 ├── eda.py                      # Exploratory Data Analysis & plot generator
 ├── safety.py                   # Medical red-flag detection & emergency triage
-├── database.py                 # SQLite database helper for search history
+├── database.py                 # SQLite storage for symptom and plant-scan result history
 ├── demo_tests.py               # Comprehensive 7-stage verification test runner
 ├── requirements.txt            # Project dependencies
 ├── README.md                   # Complete documentation
@@ -251,13 +253,14 @@ The application also includes an explainable AI extension:
 
 ### Enabling local plant recognition
 
-Train or obtain a properly licensed Ayurvedic-plant image-classification model, then place it at:
+The Plant Scan uses the fine-tuned ResNet-50 checkpoint and the exact class order stored in:
 
 ```text
-models/ayurvedic_plant_classifier/
+models/plant_resnet50_finetuned.pth
+models/class_names.json
 ```
 
-The directory must be a local Hugging Face image-classification model and contain `labels.json`, either as a label list or `{ "labels": [...] }`. Labels should use supported keys such as `tulsi`, `ashwagandha`, `neem`, `aloe_vera`, or `ginger`. The app uses only this local model; it does not upload patient images to a cloud service.
+The JSON file supplies all 40 output labels in model order. Inference uses a 224×224 RGB image normalized with ImageNet mean and standard deviation, and runs locally without downloading weights or uploading images. Top-three confidence values are the model's softmax probabilities. Detailed Ayurvedic profiles are provided only for selected plants; missing profiles are not inferred or invented.
 
 ---
 

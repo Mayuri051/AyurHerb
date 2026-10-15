@@ -6,6 +6,7 @@ Description: SQLite-based search logging and history tracking for the AyurHerb a
 """
 
 import os
+import json
 import sqlite3
 from datetime import datetime
 from typing import List, Dict, Any, Optional
@@ -42,9 +43,33 @@ def init_db() -> None:
             top_condition TEXT,
             similarity_score REAL,
             results_count INTEGER DEFAULT 0,
-            safety_triggered INTEGER DEFAULT 0
+            safety_triggered INTEGER DEFAULT 0,
+            record_type TEXT NOT NULL DEFAULT 'symptom',
+            herbs TEXT,
+            plant_name TEXT,
+            scientific_name TEXT,
+            confidence REAL,
+            image_path TEXT,
+            details_json TEXT
         )
     """)
+    existing_columns = {
+        row["name"] for row in cursor.execute("PRAGMA table_info(search_history)")
+    }
+    migrations = {
+        "record_type": "TEXT NOT NULL DEFAULT 'symptom'",
+        "herbs": "TEXT",
+        "plant_name": "TEXT",
+        "scientific_name": "TEXT",
+        "confidence": "REAL",
+        "image_path": "TEXT",
+        "details_json": "TEXT",
+    }
+    for column, definition in migrations.items():
+        if column not in existing_columns:
+            cursor.execute(
+                f"ALTER TABLE search_history ADD COLUMN {column} {definition}"
+            )
     conn.commit()
     conn.close()
     print(f"AyurHerb database initialized at: {get_db_path()}")
@@ -107,6 +132,146 @@ def get_history(limit: int = 50) -> List[Dict[str, Any]]:
     except Exception as e:
         print(f"Error fetching search history: {e}")
         return []
+
+
+def log_symptom_result(
+    query: str,
+    prediction: str,
+    herbs: str,
+    similarity_score: float,
+    results_count: int,
+    details: Dict[str, Any],
+    safety_triggered: bool = False
+) -> int:
+    """Store the displayable parts of a completed symptom analysis."""
+    if not query or not query.strip():
+        return -1
+
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.execute("""
+                INSERT INTO search_history (
+                    query, timestamp, top_condition, similarity_score,
+                    results_count, safety_triggered, record_type, herbs,
+                    details_json
+                )
+                VALUES (?, ?, ?, ?, ?, ?, 'symptom', ?, ?)
+            """, (
+                query.strip(),
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                prediction or "No Direct Match",
+                float(similarity_score),
+                int(results_count),
+                1 if safety_triggered else 0,
+                herbs or "",
+                json.dumps(details, ensure_ascii=False),
+            ))
+            return int(cursor.lastrowid)
+    except sqlite3.Error as exc:
+        print(f"Error saving symptom result: {exc}")
+        return -1
+
+
+def log_plant_result(
+    plant_name: str,
+    scientific_name: str,
+    confidence: float,
+    image_path: str,
+    details: Dict[str, Any]
+) -> int:
+    """Store a successful plant identification and its saved image filename."""
+    if not plant_name or not plant_name.strip():
+        return -1
+
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.execute("""
+                INSERT INTO search_history (
+                    query, timestamp, record_type, plant_name,
+                    scientific_name, confidence, image_path, details_json
+                )
+                VALUES (?, ?, 'plant', ?, ?, ?, ?, ?)
+            """, (
+                plant_name.strip(),
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                plant_name.strip(),
+                scientific_name or "",
+                float(confidence),
+                image_path,
+                json.dumps(details, ensure_ascii=False),
+            ))
+            return int(cursor.lastrowid)
+    except sqlite3.Error as exc:
+        print(f"Error saving plant result: {exc}")
+        return -1
+
+
+def get_results_history(
+    record_type: Optional[str] = None,
+    limit: int = 100
+) -> List[Dict[str, Any]]:
+    """Retrieve combined symptom and plant history, newest first."""
+    with get_db_connection() as conn:
+        if record_type in {"symptom", "plant"}:
+            rows = conn.execute("""
+                SELECT * FROM search_history
+                WHERE record_type = ?
+                ORDER BY timestamp DESC, id DESC
+                LIMIT ?
+            """, (record_type, limit)).fetchall()
+        else:
+            rows = conn.execute("""
+                SELECT * FROM search_history
+                ORDER BY timestamp DESC, id DESC
+                LIMIT ?
+            """, (limit,)).fetchall()
+
+    results = []
+    for row in rows:
+        item = dict(row)
+        try:
+            item["details"] = json.loads(item.get("details_json") or "{}")
+        except json.JSONDecodeError:
+            item["details"] = {}
+        results.append(item)
+    return results
+
+
+def get_result_history(history_id: int) -> Optional[Dict[str, Any]]:
+    """Retrieve one result record, including decoded details."""
+    with get_db_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM search_history WHERE id = ?",
+            (history_id,)
+        ).fetchone()
+    if row is None:
+        return None
+
+    item = dict(row)
+    try:
+        item["details"] = json.loads(item.get("details_json") or "{}")
+    except json.JSONDecodeError:
+        item["details"] = {}
+    return item
+
+
+def get_history_image_paths() -> List[str]:
+    """Return image filenames associated with history rows before clearing them."""
+    with get_db_connection() as conn:
+        rows = conn.execute(
+            "SELECT image_path FROM search_history WHERE image_path IS NOT NULL"
+        ).fetchall()
+    return [row["image_path"] for row in rows]
+
+
+def delete_result_history(history_id: int) -> bool:
+    """Delete only the requested interaction-history record."""
+    with get_db_connection() as conn:
+        cursor = conn.execute(
+            "DELETE FROM search_history WHERE id = ?",
+            (history_id,)
+        )
+        return cursor.rowcount > 0
 
 
 def clear_history() -> bool:

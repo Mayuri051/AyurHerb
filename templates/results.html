@@ -10,11 +10,8 @@
         <i class="bi bi-arrow-left me-1"></i> New Symptom Check
       </a>
       <h2 class="fw-bold text-success mb-1">
-        <i class="bi bi-file-earmark-medical-fill me-2"></i> Ayurvedic Wellness Analysis
+        <i class="bi bi-file-earmark-medical-fill me-2"></i> Symptom Check Results
       </h2>
-      <div class="text-secondary small">
-        Analyzed Query: <span class="badge bg-light text-dark border fs-6">"{{ query }}"</span>
-      </div>
     </div>
     <div>
       <a href="{{ url_for('symptom_checker') }}" class="btn btn-ayur-primary">
@@ -25,12 +22,15 @@
 </div>
 
 {% if symptom_analysis.recognized_symptoms or symptom_analysis.applied_aliases or profile.age_group or profile.season or profile.dosha %}
-<div class="alert alert-light border mb-4 small">
-  <strong><i class="bi bi-cpu me-1"></i> What the system understood:</strong>
+<details class="mb-3 small">
+  <summary class="text-muted">Optional analysis notes</summary>
+  <div class="alert alert-light border mt-2 mb-0">
+  <strong>Recognized input:</strong>
   {% if symptom_analysis.recognized_symptoms %} recognized symptoms: {{ symptom_analysis.recognized_symptoms|join(', ') }}.{% endif %}
   {% for alias in symptom_analysis.applied_aliases %} Interpreted “{{ alias.source }}” as “{{ alias.normalized_to }}”.{% endfor %}
   {% if profile.age_group or profile.season or profile.dosha %} Optional context: {{ [profile.age_group, profile.season, profile.dosha]|reject('equalto', '')|join(' · ') }}.{% endif %}
-</div>
+  </div>
+</details>
 {% endif %}
 
 <!-- CASE 1: EMERGENCY MEDICAL RED-FLAG DETECTED -->
@@ -76,34 +76,89 @@
   <i class="bi bi-info-circle-fill text-primary fs-3 flex-shrink-0"></i>
   <div class="small">
     <strong>Educational Wellness Disclaimer:</strong>
-    The scores below represent mathematical <strong>Symptom Similarity Scores</strong> based on textual alignment with classical Ayurvedic records. They do <em>not</em> constitute a medical diagnosis or guaranteed treatment. Consult a licensed healthcare practitioner for medical guidance.
+    This tool provides educational information from dataset records and does <em>not</em> provide a formal medical diagnosis or guaranteed treatment. Consult a qualified healthcare practitioner for medical guidance.
   </div>
 </div>
 
-<!-- Clinical AI Assessment Summary -->
-<div class="row g-3 mb-4">
-  {% if ml_result and ml_result.status == 'success' %}
-  <div class="col-md-4">
-    <div class="card p-3 shadow-sm border-0 border-start border-success border-4 h-100 bg-white">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <small class="text-success text-uppercase fw-bold"><i class="bi bi-shield-check me-1"></i> Primary Assessment</small>
-        <span class="badge bg-success">{{ ml_result.rf_confidence }}% match</span>
-      </div>
-      <div class="fw-bold fs-5 text-dark">{{ ml_result.rf_prediction }}</div>
-      <small class="text-muted">Consensus Verification: <strong>{{ ml_result.ada_prediction }}</strong></small>
-    </div>
-  </div>
-  {% endif %}
+<section class="results-step ayur-card p-4 mb-4 bg-white shadow-sm">
+  <span class="symptom-step-number">STEP 2</span>
+  <h3 class="fw-bold text-success mt-2 mb-3">Your Results</h3>
 
+  <h5 class="fw-bold text-dark mb-2">Your Selected Symptoms</h5>
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    {% if symptom_analysis.recognized_symptoms %}
+      {% for symptom in symptom_analysis.recognized_symptoms %}
+        <span class="tag-pill">{{ symptom }}</span>
+      {% endfor %}
+    {% else %}
+      <span class="tag-pill">{{ query }}</span>
+    {% endif %}
+  </div>
+
+  {% if results %}
+    {% set primary_result = results[0] %}
+    <div class="possible-condition p-3 p-md-4 rounded-3 mb-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+        <div>
+          <div class="small text-uppercase fw-bold text-success mb-1">Possible Matching Condition</div>
+          <h4 class="fw-bold text-dark mb-1">{{ primary_result.disease }}</h4>
+          <p class="small text-muted mb-0">This condition appears in dataset records with symptoms similar to the ones you entered.</p>
+        </div>
+        {% if primary_result.similarity_percentage is defined %}
+          <span class="similarity-badge {% if primary_result.similarity_percentage >= 50 %}high{% else %}medium{% endif %}">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>Symptom similarity: <strong>{{ primary_result.similarity_percentage }}%</strong></span>
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <h5 class="fw-bold text-success mb-3">
+      <i class="bi bi-tree-fill me-1"></i> Associated Ayurvedic Herbs
+    </h5>
+    {% set herb_names = primary_result.ayurvedic_herbs.split(',') %}
+    {% set displayed_herb = namespace(found=false) %}
+    <div class="row g-3">
+      {% for herb in herb_names %}
+        {% set herb_name = herb.strip() %}
+        {% if herb_name and herb_name|lower not in ['none specific', 'herbal consultation recommended', 'traditional herbs', 'herbal remedies', 'lifestyle modification'] %}
+          {% set displayed_herb.found = true %}
+          <div class="col-sm-6 col-lg-4">
+            <article class="associated-herb-card h-100">
+              <div class="feature-icon"><i class="bi bi-flower1"></i></div>
+              <h6 class="fw-bold text-success">{{ herb_name }}</h6>
+              <p class="small text-muted mb-3">Herb listed in the matching dataset record.</p>
+              <a href="{{ url_for('herb_detail', herb_name=herb_name) }}" class="btn btn-sm btn-ayur-outline">
+                View Herb <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+            </article>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% if not displayed_herb.found %}
+      <p class="text-secondary mb-0">No associated herb names are listed in this matching dataset record.</p>
+    {% endif %}
+  {% else %}
+    <div class="alert alert-light border mb-0">
+      No matching condition was found in the dataset for these symptoms. Try different wording or consult a qualified healthcare professional.
+    </div>
+  {% endif %}
+</section>
+
+<!-- Additional personalization and model outputs are secondary to the matching results. -->
+<details class="mb-4">
+  <summary class="btn btn-sm btn-outline-success">View optional guidance and additional model outputs</summary>
+<div class="row g-3 mt-2">
   {% if bayesian_result and bayesian_result.status == 'success' %}
   <div class="col-md-4">
     <div class="card p-3 shadow-sm border-0 border-start border-primary border-4 h-100 bg-white">
       <div class="d-flex justify-content-between align-items-center mb-1">
-        <small class="text-primary text-uppercase fw-bold"><i class="bi bi-graph-up me-1"></i> Diagnostic Likelihood</small>
-        <span class="badge bg-primary">{{ bayesian_result.top_probability }}% probability</span>
+        <small class="text-primary text-uppercase fw-bold"><i class="bi bi-graph-up me-1"></i> Additional dataset estimate</small>
+        <span class="badge bg-primary">{{ bayesian_result.top_probability }}% association</span>
       </div>
       <div class="fw-bold fs-5 text-dark">{{ bayesian_result.top_condition }}</div>
-      <small class="text-muted">Estimated from symptom co-occurrence frequency</small>
+      <small class="text-muted">Based on symptom co-occurrence in the dataset; not a diagnosis.</small>
     </div>
   </div>
   {% endif %}
@@ -121,12 +176,16 @@
   </div>
   {% endif %}
 </div>
+</details>
 
 <!-- CASE 2: RESULTS FOUND -->
 {% if results %}
+  <details class="additional-result-details mb-4">
+    <summary class="fw-bold text-success">More matching records and dataset details</summary>
+    <div class="pt-3">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="fw-bold text-dark mb-0">
-      <i class="bi bi-stars text-warning me-1"></i> Top Matching Ayurvedic References ({{ results|length }} found)
+      <i class="bi bi-stars text-warning me-1"></i> Additional Matching Dataset Records ({{ results|length }} found)
     </h5>
     <span class="small text-muted">Relevance Threshold: &ge; {{ threshold * 100 }}%</span>
   </div>
@@ -283,6 +342,8 @@
       </div>
     {% endfor %}
   </div>
+    </div>
+  </details>
 
 <!-- CASE 3: NO MATCHING RESULTS ABOVE THRESHOLD -->
 {% else %}

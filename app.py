@@ -3,22 +3,30 @@ AyurHerb - Flask Web Application (app.py)
 Author: Data Science Team
 Description: Multi-paradigm cognitive healthcare web application integrating:
              1. NLP & TF-IDF Semantic Retrieval
-             2. Supervised Machine Learning (Random Forest & AdaBoost) [Unit V]
-             3. Fuzzy Logic Dosage Controller (Mamdani FIS) [Unit III]
-             4. Bayesian Network Probabilistic Inference [Unit I]
-             5. Clinical Safety & Emergency Triage
-             6. SQLite Search History Audit
+             2. Fuzzy Logic Dosage Controller (Mamdani FIS) [Unit III]
+             3. Bayesian Network Probabilistic Inference [Unit I]
+             4. Clinical Safety & Emergency Triage
+             5. SQLite Results History
 """
 
 import os
+from datetime import datetime
 from uuid import uuid4
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import (
+    Flask,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    url_for,
+)
 from werkzeug.utils import secure_filename
 from recommendation_engine import AyurvedicRecommender, SIMILARITY_THRESHOLD
 from safety import evaluate_safety
 from intelligence import enrich_results, normalize_symptoms, profile_from_form, score_dosha
 from plant_identifier import PlantImageIdentifier, allowed_image, validate_image
-from ml_classifier import AyurvedicMLClassifier
 from fuzzy_engine import AyurvedicFuzzyInferenceSystem
 from bayesian_engine import AyurvedicBayesianNetwork
 import database as db
@@ -39,30 +47,59 @@ os.makedirs(upload_dir, exist_ok=True)
 # 1. Recommendation Engine (TF-IDF + Cosine Similarity)
 recommender = AyurvedicRecommender(data_path)
 
-# 2. Supervised ML Classifier (Random Forest & AdaBoost - Unit V)
-ml_classifier = AyurvedicMLClassifier(data_path)
-
-# 3. Fuzzy Logic Inference Engine (Mamdani FIS - Unit III)
+# 2. Fuzzy Logic Inference Engine (Mamdani FIS - Unit III)
 fuzzy_engine = AyurvedicFuzzyInferenceSystem()
 
-# 4. Bayesian Probabilistic Network (Unit I)
+# 3. Bayesian Probabilistic Network (Unit I)
 bayesian_engine = AyurvedicBayesianNetwork(data_path)
 
-# 5. Plant Identifier (Deep Learning / Vision hook - Unit IV)
-plant_identifier = PlantImageIdentifier(os.path.join(base_dir, "models", "ayurvedic_plant_classifier"))
+# 4. Plant Identifier (Deep Learning / Vision hook - Unit IV)
+plant_identifier = PlantImageIdentifier(os.path.join(base_dir, "models"))
+
+
+PLANT_HERB_NAME_ALIASES = {
+    "Aloevera": "Aloe Vera",
+    "Avacado": "Avocado",
+    "Betel_Nut": "Betel Nut",
+    "Curry_Leaf": "Curry Leaf",
+    "Lemon_grass": "Lemongrass",
+    "Pappaya": "Papaya",
+    "Tulasi": "Tulsi",
+    "Wood_sorel": "Wood Sorrel",
+}
+
+
+def _attach_herb_explorer_details(prediction):
+    """Attach exact herb-dataset matches without changing model predictions."""
+    available_herbs = {
+        " ".join(herb["name"].casefold().split()): herb
+        for herb in recommender.get_all_herbs()
+    }
+    for candidate in prediction.get("candidates", []):
+        class_name = candidate.get("class_name", "")
+        herb_name = PLANT_HERB_NAME_ALIASES.get(
+            class_name,
+            class_name.replace("_", " "),
+        )
+        herb = available_herbs.get(" ".join(herb_name.casefold().split()))
+        if not herb:
+            continue
+
+        details = recommender.get_herb_detail(herb["name"])
+        candidate["herb_explorer_query"] = herb["name"]
+        candidate["associated_conditions"] = details["conditions"] if details else []
+    return prediction
 
 
 @app.route("/")
 def index():
-    """Home landing page with system overview, dataset stats, and ML highlights."""
+    """Home landing page with system overview and dataset stats."""
     metrics = recommender.get_summary_metrics()
     popular_symptoms = recommender.get_popular_symptoms_list()[:8]
-    ml_metrics = ml_classifier.metrics_
     return render_template(
         "index.html",
         metrics=metrics,
-        popular_symptoms=popular_symptoms,
-        ml_metrics=ml_metrics
+        popular_symptoms=popular_symptoms
     )
 
 
@@ -89,14 +126,13 @@ def wellness_profile():
 @app.route("/analyze", methods=["POST"])
 def analyze_symptoms():
     """
-    Multi-stage cognitive & ML analysis pipeline:
+    Symptom analysis pipeline:
     1. Safety & Emergency Triage
     2. Multilingual Normalization
     3. TF-IDF Semantic Ranking
-    4. Random Forest & AdaBoost ML Classification (Unit V)
-    5. Bayesian Probabilistic Inference (Unit I)
-    6. Fuzzy Logic Dosage Calculation (Unit III)
-    7. SQLite Logging
+    4. Bayesian Probabilistic Inference (Unit I)
+    5. Fuzzy Logic Dosage Calculation (Unit III)
+    6. SQLite History Logging
     """
     query = request.form.get("symptoms", "").strip()
     profile = profile_from_form(request.form)
@@ -127,9 +163,24 @@ def analyze_symptoms():
     # Stage 1: Safety & Emergency Triage
     safety_result = evaluate_safety(query)
     if safety_result["is_emergency"]:
-        if request.form.get("save_history") == "yes":
-            db.log_search(query=query, top_condition="Emergency Medical Warning Triggered",
-                          similarity_score=0.0, results_count=0, safety_triggered=True)
+        history_id = db.log_symptom_result(
+            query=query,
+            prediction="Emergency Medical Warning Triggered",
+            herbs="",
+            similarity_score=0.0,
+            results_count=0,
+            safety_triggered=True,
+            details={
+                "is_emergency": True,
+                "safety": {
+                    "emergency_message": safety_result.get("emergency_message", ""),
+                    "detected_flags": safety_result.get("detected_flags", []),
+                    "advice": safety_result.get("advice", ""),
+                },
+            },
+        )
+        if history_id < 0:
+            flash("Your safety result was shown, but could not be saved to Results.", "warning")
         return render_template(
             "results.html",
             query=query,
@@ -139,7 +190,6 @@ def analyze_symptoms():
             threshold=SIMILARITY_THRESHOLD,
             symptom_analysis={"recognized_symptoms": [], "applied_aliases": []},
             profile=profile,
-            ml_result=None,
             bayesian_result=None,
             fuzzy_result=None
         )
@@ -150,10 +200,7 @@ def analyze_symptoms():
     results = recommender.recommend(query=normalized_query, top_k=6, threshold=SIMILARITY_THRESHOLD)
     results = enrich_results(results, profile, symptom_analysis["recognized_symptoms"])
 
-    # Stage 3: Supervised ML Classification (Random Forest & AdaBoost)
-    ml_result = ml_classifier.predict(normalized_query, top_k=3)
-
-    # Stage 4: Bayesian Network Probabilistic Inference (Unit I)
+    # Stage 3: Bayesian Network Probabilistic Inference (Unit I)
     bayesian_result = bayesian_engine.infer(
         symptoms_query=normalized_query,
         dosha_evidence=profile.get("dosha"),
@@ -161,20 +208,43 @@ def analyze_symptoms():
         top_k=3
     )
 
-    # Stage 5: Fuzzy Logic Dosage & Formulation Potency (Unit III)
+    # Stage 4: Fuzzy Logic Dosage & Formulation Potency (Unit III)
     fuzzy_result = fuzzy_engine.infer(
         severity_score=severity_val,
         duration_days=duration_val,
         agni_score=6.0
     )
 
-    top_condition = results[0]["disease"] if results else (ml_result.get("rf_prediction") or "No Direct Match")
+    top_condition = results[0]["disease"] if results else "No Direct Match"
     top_score = results[0]["similarity_score"] if results else 0.0
 
-    # Stage 6: SQLite Search History Logging
-    if request.form.get("save_history") == "yes":
-        db.log_search(query=query, top_condition=top_condition, similarity_score=top_score,
-                      results_count=len(results), safety_triggered=False)
+    # Save only the symptom input and the result details required for history.
+    primary_result = results[0] if results else {}
+    history_fields = (
+        "disease", "hindi_name", "marathi_name", "similarity_score",
+        "similarity_percentage", "symptoms", "symptom_severity",
+        "duration_of_treatment", "ayurvedic_herbs", "herbal_remedies",
+        "formulation", "doshas", "prakriti", "yoga_and_therapy",
+        "diet_and_lifestyle", "prevention", "medical_intervention",
+    )
+    history_details = {
+        "is_emergency": False,
+        "recommendation": {
+            key: primary_result[key]
+            for key in history_fields
+            if key in primary_result
+        },
+    }
+    history_id = db.log_symptom_result(
+        query=query,
+        prediction=top_condition,
+        herbs=str(primary_result.get("ayurvedic_herbs", "")),
+        similarity_score=top_score,
+        results_count=len(results),
+        details=history_details,
+    )
+    if history_id < 0:
+        flash("Your results were shown, but could not be saved to Results.", "warning")
 
     return render_template(
         "results.html",
@@ -185,40 +255,8 @@ def analyze_symptoms():
         threshold=SIMILARITY_THRESHOLD,
         symptom_analysis=symptom_analysis,
         profile=profile,
-        ml_result=ml_result,
         bayesian_result=bayesian_result,
         fuzzy_result=fuzzy_result
-    )
-
-
-@app.route("/ml-evaluation")
-def ml_evaluation():
-    """Machine Learning & Ensemble Classification Benchmark Dashboard (Unit V)."""
-    metrics = ml_classifier.metrics_
-    features = ml_classifier.get_feature_importance(top_n=12)
-    
-    plots = [
-        {
-            "filename": "ml_model_comparison.png",
-            "title": "Supervised Model Comparison (Unit V)",
-            "description": "Accuracy, Precision, Recall, and F1-Scores across Random Forest, AdaBoost, Decision Tree, and Naive Bayes."
-        },
-        {
-            "filename": "ml_feature_importance.png",
-            "title": "Random Forest Symptom Feature Importance",
-            "description": "Gini-importance scores of key symptom vocabulary nodes extracted by the tree ensemble."
-        },
-        {
-            "filename": "ml_confusion_matrix.png",
-            "title": "Confusion Matrix for Top Classes",
-            "description": "True vs. Predicted class distribution showing classification accuracy across frequent conditions."
-        }
-    ]
-    return render_template(
-        "ml_evaluation.html",
-        metrics=metrics,
-        features=features,
-        plots=plots
     )
 
 
@@ -257,17 +295,43 @@ def plant_identifier_page():
             filename = f"{uuid4().hex}.{extension}"
             image_path = os.path.join(upload_dir, secure_filename(filename))
             image.save(image_path)
+            keep_image = False
             try:
                 if validate_image(image_path):
-                    prediction = plant_identifier.identify(image_path)
+                    try:
+                        prediction = plant_identifier.identify(image_path)
+                        prediction = _attach_herb_explorer_details(prediction)
+                    except (RuntimeError, ValueError) as error:
+                        app.logger.exception("Plant image identification failed")
+                        flash(f"Plant identification failed: {error}", "danger")
+                    else:
+                        if prediction.get("candidates"):
+                            candidate = prediction["candidates"][0]
+                            history_id = db.log_plant_result(
+                                plant_name=str(candidate.get("display_name", "Unknown plant")),
+                                scientific_name=str(candidate.get("botanical_name", "")),
+                                confidence=float(candidate.get("confidence", 0.0)),
+                                image_path=filename,
+                                details=candidate,
+                            )
+                            if history_id > 0:
+                                keep_image = True
+                            else:
+                                flash("The plant was identified, but could not be saved to Results.", "warning")
                 else:
                     flash("That file is not a valid decodable image.", "warning")
             finally:
-                try:
-                    os.remove(image_path)
-                except OSError:
-                    pass
-    return render_template("plant_identifier.html", prediction=prediction, model_ready=plant_identifier.is_ready)
+                if not keep_image:
+                    try:
+                        os.remove(image_path)
+                    except OSError:
+                        app.logger.exception("Unable to remove temporary plant scan image")
+    return render_template(
+        "plant_identifier.html",
+        prediction=prediction,
+        model_ready=plant_identifier.is_ready,
+        class_names=plant_identifier.class_names,
+    )
 
 
 @app.errorhandler(413)
@@ -444,16 +508,90 @@ def analytics():
 
 @app.route("/history")
 def history():
-    """User search history log from SQLite."""
-    history_logs = db.get_history(limit=50)
-    return render_template("history.html", history=history_logs)
+    """Combined local history of symptom checks and plant scans."""
+    requested_type = request.args.get("type", "all").strip().lower()
+    selected_type = requested_type if requested_type in {"all", "symptom", "plant"} else "all"
+    history_records = db.get_results_history(
+        record_type=None if selected_type == "all" else selected_type,
+        limit=100,
+    )
+    for record in history_records:
+        record["formatted_timestamp"] = _format_history_timestamp(record.get("timestamp"))
+    return render_template(
+        "history.html",
+        history=history_records,
+        selected_type=selected_type,
+    )
+
+
+@app.route("/history/<int:history_id>")
+def history_detail(history_id):
+    """Show the saved details for one symptom check or plant scan."""
+    record = db.get_result_history(history_id)
+    if record is None:
+        abort(404)
+    record["formatted_timestamp"] = _format_history_timestamp(record.get("timestamp"))
+    return render_template("history_detail.html", record=record)
+
+
+@app.route("/history/<int:history_id>/image")
+def history_image(history_id):
+    """Serve an image only when it belongs to a saved plant-scan record."""
+    record = db.get_result_history(history_id)
+    if not record or record.get("record_type") != "plant" or not record.get("image_path"):
+        abort(404)
+    filename = os.path.basename(record["image_path"])
+    if filename != record["image_path"]:
+        abort(404)
+    return send_from_directory(upload_dir, filename)
+
+
+def _remove_history_image(image_path):
+    """Remove a stored upload by its database-recorded filename only."""
+    filename = os.path.basename(image_path or "")
+    if not filename or filename != image_path:
+        return
+    try:
+        os.remove(os.path.join(upload_dir, filename))
+    except FileNotFoundError:
+        return
+    except OSError:
+        app.logger.exception("Unable to remove plant image for deleted history")
+
+
+def _format_history_timestamp(value):
+    if not value:
+        return "Date unavailable"
+    try:
+        return datetime.fromisoformat(value).strftime("%d %B %Y, %I:%M %p")
+    except (TypeError, ValueError):
+        return str(value)
+
+
+@app.route("/history/<int:history_id>/delete", methods=["POST"])
+def delete_history_record(history_id):
+    """Delete one saved history entry and only its associated scan image."""
+    record = db.get_result_history(history_id)
+    if record is None:
+        abort(404)
+    if db.delete_result_history(history_id):
+        _remove_history_image(record.get("image_path"))
+        flash("The selected result has been deleted.", "info")
+    else:
+        flash("The selected result could not be deleted.", "warning")
+    return redirect(url_for("history"))
 
 
 @app.route("/history/clear", methods=["POST"])
 def clear_history():
-    """Clear all past search queries from SQLite."""
-    db.clear_history()
-    flash("Search history has been cleared successfully.", "info")
+    """Clear saved history records and their associated plant-scan images."""
+    image_paths = db.get_history_image_paths()
+    if db.clear_history():
+        for image_path in image_paths:
+            _remove_history_image(image_path)
+        flash("Search history has been cleared successfully.", "info")
+    else:
+        flash("History could not be cleared. Please try again.", "warning")
     return redirect(url_for("history"))
 
 

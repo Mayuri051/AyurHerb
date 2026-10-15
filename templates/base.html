@@ -42,7 +42,7 @@
           </li>
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint == 'plant_identifier_page' %}active{% endif %}" href="{{ url_for('plant_identifier_page') }}">
-              <i class="bi bi-image me-1"></i> Plant Scan
+              <i class="bi bi-camera me-1"></i> Plant Scan
             </a>
           </li>
           <li class="nav-item">
@@ -51,28 +51,8 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.endpoint in ['conditions_explorer', 'condition_detail'] %}active{% endif %}" href="{{ url_for('conditions_explorer') }}">
-              <i class="bi bi-journal-medical me-1"></i> Conditions
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'fuzzy_dosage' %}active{% endif %}" href="{{ url_for('fuzzy_dosage') }}">
-              <i class="bi bi-sliders me-1"></i> Fuzzy Dosage
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'ml_evaluation' %}active{% endif %}" href="{{ url_for('ml_evaluation') }}">
-              <i class="bi bi-cpu me-1"></i> ML Models
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">
-              <i class="bi bi-bar-chart-line me-1"></i> Analytics
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'history' %}active{% endif %}" href="{{ url_for('history') }}">
-              <i class="bi bi-clock-history me-1"></i> History
+            <a class="nav-link {% if request.endpoint in ['history', 'history_detail'] %}active{% endif %}" href="{{ url_for('history') }}">
+              <i class="bi bi-clock-history me-1"></i> Results
             </a>
           </li>
           <li class="nav-item">
@@ -123,11 +103,10 @@
           <h6 class="fw-bold text-dark mb-3">Quick Navigation</h6>
           <ul class="list-unstyled small d-flex flex-column gap-1">
             <li><a href="{{ url_for('symptom_checker') }}" class="text-decoration-none text-secondary">Symptom Checker</a></li>
-            <li><a href="{{ url_for('plant_identifier_page') }}" class="text-decoration-none text-secondary">Plant Image Identifier</a></li>
-            <li><a href="{{ url_for('herbs_explorer') }}" class="text-decoration-none text-secondary">Ayurvedic Herbs</a></li>
-            <li><a href="{{ url_for('conditions_explorer') }}" class="text-decoration-none text-secondary">Condition Directory</a></li>
-            <li><a href="{{ url_for('analytics') }}" class="text-decoration-none text-secondary">EDA Analytics Dashboard</a></li>
-            <li><a href="{{ url_for('about') }}" class="text-decoration-none text-secondary">Project Methodology & Tech Stack</a></li>
+            <li><a href="{{ url_for('plant_identifier_page') }}" class="text-decoration-none text-secondary">Plant Scan</a></li>
+            <li><a href="{{ url_for('herbs_explorer') }}" class="text-decoration-none text-secondary">Herb Explorer</a></li>
+            <li><a href="{{ url_for('history') }}" class="text-decoration-none text-secondary">Results / History</a></li>
+            <li><a href="{{ url_for('about') }}" class="text-decoration-none text-secondary">About AYURHERB</a></li>
           </ul>
         </div>
         <div class="col-md-4">

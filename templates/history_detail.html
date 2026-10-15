@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Result Details – AyurHerb{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-4 pb-3 border-bottom">
+  <div>
+    <a href="{{ url_for('history') }}" class="btn btn-sm btn-outline-secondary mb-2">
+      <i class="bi bi-arrow-left me-1"></i> Back to Results
+    </a>
+    <h2 class="fw-bold text-success mb-1">
+      <i class="bi {% if record.record_type == 'plant' %}bi-flower1{% else %}bi-heart-pulse-fill{% endif %} me-2"></i>
+      {% if record.record_type == 'plant' %}Plant Scan Details{% else %}Symptom Check Details{% endif %}
+    </h2>
+    <time class="small text-muted" datetime="{{ record.timestamp }}">{{ record.formatted_timestamp }}</time>
+  </div>
+  <form action="{{ url_for('delete_history_record', history_id=record.id) }}" method="POST"
+        onsubmit="return confirm('Delete this result from your history?');">
+    <button type="submit" class="btn btn-sm btn-outline-danger">
+      <i class="bi bi-trash me-1"></i> Delete Result
+    </button>
+  </form>
+</div>
+
+{% if record.record_type == 'plant' %}
+{% set plant = record.details %}
+<article class="ayur-card p-3 p-md-4 bg-white">
+  <div class="row g-4 align-items-start">
+    {% if record.image_path %}
+    <div class="col-md-5">
+      <img src="{{ url_for('history_image', history_id=record.id) }}"
+           alt="{{ record.plant_name or 'Identified plant' }}"
+           class="img-fluid rounded-4 border shadow-sm w-100 history-detail-image">
+    </div>
+    {% endif %}
+    <div class="{% if record.image_path %}col-md-7{% else %}col-12{% endif %}">
+      <span class="badge bg-success-subtle text-success border border-success-subtle mb-2">
+        <i class="bi bi-check-circle me-1"></i> Plant identification
+      </span>
+      <h3 class="fw-bold text-dark mb-1">{{ record.plant_name or plant.get('display_name', 'Unknown plant') }}</h3>
+      {% if record.scientific_name or plant.get('botanical_name') %}
+      <p class="text-success fst-italic mb-3">{{ record.scientific_name or plant.get('botanical_name') }}</p>
+      {% endif %}
+      {% if record.confidence is not none %}
+      <p><strong>Confidence:</strong> <span class="similarity-badge">{{ record.confidence|round(1) }}%</span></p>
+      {% endif %}
+      {% if plant.get('sanskrit_name') %}<p><strong>Sanskrit name:</strong> {{ plant.get('sanskrit_name') }}</p>{% endif %}
+      {% if plant.get('dosha_balance') %}
+      <div class="p-3 bg-light rounded-3 mb-3">
+        <h6 class="fw-bold text-success"><i class="bi bi-yin-yang me-1"></i> Ayurvedic information</h6>
+        <p class="mb-0">{{ plant.get('dosha_balance') }}</p>
+      </div>
+      {% endif %}
+      {% if plant.get('key_benefits') %}
+      <div class="mb-3">
+        <h6 class="fw-bold text-success"><i class="bi bi-stars me-1"></i> Key properties</h6>
+        <p class="text-secondary mb-0">{{ plant.get('key_benefits') }}</p>
+      </div>
+      {% endif %}
+      {% if plant.get('safe_preparation') %}
+      <div class="p-3 bg-light rounded-3 mb-3">
+        <h6 class="fw-bold text-success"><i class="bi bi-cup-hot me-1"></i> Traditional use and preparation</h6>
+        <p class="mb-0">{{ plant.get('safe_preparation') }}</p>
+      </div>
+      {% endif %}
+      {% if plant.get('dosage') %}
+      <p><strong>Dataset dosage entry (informational only):</strong> {{ plant.get('dosage') }}</p>
+      {% endif %}
+      {% if plant.get('precautions') %}
+      <div class="alert alert-warning mb-0">
+        <strong><i class="bi bi-exclamation-triangle me-1"></i> Precautions &amp; safety:</strong>
+        {{ plant.get('precautions') }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</article>
+<div class="disclaimer-banner d-flex gap-3 align-items-center mt-4">
+  <i class="bi bi-shield-exclamation text-warning fs-3 flex-shrink-0"></i>
+  <div class="small">
+    <strong>Botanical Safety Note:</strong> Visual identification is intended for educational reference. Never ingest or apply an unknown wild plant without verification from a qualified Ayurvedic physician or botanist.
+  </div>
+</div>
+{% else %}
+{% set details = record.details %}
+{% set recommendation = details.get('recommendation', {}) %}
+<div class="disclaimer-banner d-flex gap-3 align-items-center mb-4">
+  <i class="bi bi-info-circle-fill text-primary fs-3 flex-shrink-0"></i>
+  <div class="small">
+    <strong>Educational Wellness Disclaimer:</strong>
+    This tool provides educational information from dataset records and does <em>not</em> provide a formal medical diagnosis or guaranteed treatment. Consult a qualified healthcare practitioner for medical guidance.
+  </div>
+</div>
+
+<article class="ayur-card p-3 p-md-4 bg-white">
+  {% if record.safety_triggered %}
+  <div class="alert alert-danger">
+    <h5 class="fw-bold"><i class="bi bi-shield-fill-exclamation me-2"></i>Urgent safety result</h5>
+    <p class="mb-2">{{ details.get('safety', {}).get('emergency_message', 'A safety warning was triggered for this symptom check.') }}</p>
+    {% if details.get('safety', {}).get('detected_flags') %}
+    <p class="mb-2"><strong>Detected warning signs:</strong> {{ details.get('safety', {}).get('detected_flags')|join(', ') }}</p>
+    {% endif %}
+    {% if details.get('safety', {}).get('advice') %}<p class="mb-0">{{ details.get('safety', {}).get('advice') }}</p>{% endif %}
+  </div>
+  {% endif %}
+  <div class="mb-4">
+    <h5 class="fw-bold text-dark"><i class="bi bi-activity text-danger me-2"></i>Symptoms</h5>
+    <p class="mb-0">{{ record.query or 'Not recorded' }}</p>
+  </div>
+  <div class="mb-4">
+    <h5 class="fw-bold text-success"><i class="bi bi-search-heart me-2"></i>Matched condition</h5>
+    <p class="fs-5 fw-semibold mb-1">{{ record.top_condition or 'No direct match' }}</p>
+    {% if record.similarity_score %}
+    <span class="similarity-badge">{{ (record.similarity_score * 100)|round(1) }}% symptom similarity</span>
+    {% endif %}
+  </div>
+  {% if record.herbs or recommendation.get('ayurvedic_herbs') %}
+  <div class="mb-4">
+    <h5 class="fw-bold text-success"><i class="bi bi-tree-fill me-2"></i>Associated Ayurvedic herbs</h5>
+    <p class="mb-0">{{ record.herbs or recommendation.get('ayurvedic_herbs') }}</p>
+  </div>
+  {% endif %}
+  {% if recommendation %}
+  <div class="row g-3">
+    {% if recommendation.get('formulation') %}
+    <div class="col-md-6"><div class="p-3 border rounded-3 h-100">
+      <h6 class="fw-bold text-primary"><i class="bi bi-cup-hot-fill me-1"></i> Formulation / preparation</h6>
+      <p class="mb-0">{{ recommendation.get('formulation') }}</p>
+    </div></div>
+    {% endif %}
+    {% if recommendation.get('herbal_remedies') %}
+    <div class="col-md-6"><div class="p-3 border rounded-3 h-100">
+      <h6 class="fw-bold text-success"><i class="bi bi-house-heart-fill me-1"></i> Home / alternative remedies</h6>
+      <p class="mb-0">{{ recommendation.get('herbal_remedies') }}</p>
+    </div></div>
+    {% endif %}
+    {% if recommendation.get('symptoms') %}
+    <div class="col-12"><div class="p-3 bg-light rounded-3">
+      <h6 class="fw-bold">Symptoms documented in the matching dataset record</h6>
+      <p class="mb-0">{{ recommendation.get('symptoms') }}</p>
+    </div></div>
+    {% endif %}
+    {% if recommendation.get('diet_and_lifestyle') %}
+    <div class="col-12"><div class="p-3 border rounded-3">
+      <h6 class="fw-bold"><i class="bi bi-egg-fried text-success me-1"></i> Diet and lifestyle</h6>
+      <p class="mb-0">{{ recommendation.get('diet_and_lifestyle') }}</p>
+    </div></div>
+    {% endif %}
+    {% if recommendation.get('medical_intervention') %}
+    <div class="col-12"><div class="p-3 bg-light-subtle border rounded-3">
+      <h6 class="fw-bold"><i class="bi bi-shield-check text-danger me-1"></i> Clinical precautions</h6>
+      <p class="mb-0">{{ recommendation.get('medical_intervention') }}</p>
+    </div></div>
+    {% endif %}
+  </div>
+  {% elif not record.safety_triggered %}
+  <p class="text-muted mb-0">No additional recommendation details were stored for this result.</p>
+  {% endif %}
+</article>
+{% endif %}
+{% endblock %}

@@ -1,97 +1,112 @@
 {% extends "base.html" %}
 
-{% block title %}Search History – AyurHerb{% endblock %}
+{% block title %}Results / History – AyurHerb{% endblock %}
 
 {% block content %}
-<div class="mb-4">
+<section class="mb-4">
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
     <div>
       <h2 class="fw-bold text-success mb-1">
-        <i class="bi bi-clock-history me-2"></i> Local Search History Log
+        <i class="bi bi-clock-history me-2"></i>Your Results
       </h2>
-      <p class="text-secondary small mb-0">
-        Review your symptom check audit queries logged locally in the SQLite database (<code>ayurherb.db</code>).
-      </p>
+      <p class="text-secondary mb-0">View your recent symptom checks and plant identification results.</p>
     </div>
     {% if history %}
-      <form action="{{ url_for('clear_history') }}" method="POST" onsubmit="return confirm('Are you sure you want to clear all search history?');">
-        <button type="submit" class="btn btn-outline-danger btn-sm">
-          <i class="bi bi-trash3 me-1"></i> Clear Search History
-        </button>
-      </form>
+    <form action="{{ url_for('clear_history') }}" method="POST"
+          onsubmit="return confirm('Clear all saved symptom checks and plant scans? This cannot be undone.');">
+      <button type="submit" class="btn btn-outline-danger">
+        <i class="bi bi-trash3 me-1"></i> Clear History
+      </button>
+    </form>
     {% endif %}
   </div>
-</div>
+</section>
+
+<nav class="nav nav-pills history-filters mb-4" aria-label="Filter results">
+  <a class="nav-link {% if selected_type == 'all' %}active{% endif %}" href="{{ url_for('history') }}">All</a>
+  <a class="nav-link {% if selected_type == 'symptom' %}active{% endif %}" href="{{ url_for('history', type='symptom') }}">Symptom Checks</a>
+  <a class="nav-link {% if selected_type == 'plant' %}active{% endif %}" href="{{ url_for('history', type='plant') }}">Plant Scans</a>
+</nav>
 
 {% if history %}
-  <div class="ayur-card bg-white shadow-sm overflow-hidden mb-4">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th style="width: 5%;">#</th>
-            <th style="width: 35%;">Searched Symptoms</th>
-            <th style="width: 20%;">Date & Time</th>
-            <th style="width: 22%;">Top Matching Condition</th>
-            <th style="width: 18%;">Similarity Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in history %}
-            <tr>
-              <td class="text-muted small">{{ row.id }}</td>
-              <td>
-                <span class="fw-semibold text-dark">{{ row.query }}</span>
-                {% if row.safety_triggered %}
-                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-2 small">
-                    <i class="bi bi-shield-exclamation"></i> Red-Flag Warning
-                  </span>
-                {% endif %}
-              </td>
-              <td class="small text-muted">
-                <i class="bi bi-calendar3 me-1"></i> {{ row.timestamp }}
-              </td>
-              <td>
-                {% if row.safety_triggered %}
-                  <span class="text-danger fw-bold small">Emergency Triage</span>
-                {% elif row.top_condition and row.top_condition != 'No Match' %}
-                  <span class="fw-semibold text-success">{{ row.top_condition }}</span>
-                {% else %}
-                  <span class="text-muted small">No direct match</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if row.safety_triggered %}
-                  <span class="badge bg-light text-muted border">N/A</span>
-                {% elif row.similarity_score > 0 %}
-                  <span class="similarity-badge small py-1 px-2">
-                    {{ (row.similarity_score * 100)|round(1) }}%
-                  </span>
-                {% else %}
-                  <span class="badge bg-light text-muted border">0.0%</span>
-                {% endif %}
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
+<div class="row g-3">
+  {% for record in history %}
+  <div class="col-12">
+    <article class="ayur-card history-result-card p-3 p-md-4 bg-white">
+      <div class="d-flex flex-column flex-md-row gap-3">
+        {% if record.record_type == 'plant' and record.image_path %}
+        <img class="history-plant-image rounded-3 border" src="{{ url_for('history_image', history_id=record.id) }}"
+             alt="{{ record.plant_name or 'Plant scan' }}">
+        {% else %}
+        <div class="history-result-icon {% if record.record_type == 'plant' %}plant{% endif %}" aria-hidden="true">
+          <i class="bi {% if record.record_type == 'plant' %}bi-flower1{% else %}bi-heart-pulse-fill{% endif %}"></i>
+        </div>
+        {% endif %}
 
-  <div class="small text-muted text-center">
-    <i class="bi bi-shield-lock me-1"></i> Privacy Assurance: Search logs are stored strictly inside your local instance database and contain no personal identity information.
-  </div>
+        <div class="flex-grow-1 min-w-0">
+          <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 mb-2">
+            <div>
+              <h5 class="fw-bold text-dark mb-1">
+                {% if record.record_type == 'plant' %}Plant Scan{% else %}Symptom Check{% endif %}
+              </h5>
+              <time class="small text-muted" datetime="{{ record.timestamp }}">
+                <i class="bi bi-calendar3 me-1"></i>{{ record.formatted_timestamp }}
+              </time>
+            </div>
+            {% if record.record_type == 'symptom' and record.safety_triggered %}
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle align-self-start">
+              <i class="bi bi-shield-exclamation me-1"></i>Urgent safety result
+            </span>
+            {% endif %}
+          </div>
 
+          {% if record.record_type == 'plant' %}
+          <div class="history-result-fields">
+            <div><span>Identified plant</span><strong>{{ record.plant_name or record.query or 'Unknown plant' }}</strong></div>
+            {% if record.scientific_name %}<div><span>Scientific name</span><strong class="fst-italic">{{ record.scientific_name }}</strong></div>{% endif %}
+            {% if record.confidence is not none %}<div><span>Confidence</span><strong>{{ record.confidence|round(1) }}%</strong></div>{% endif %}
+          </div>
+          {% else %}
+          <div class="history-result-fields">
+            <div><span>Symptoms</span><strong>{{ record.query or 'Not recorded' }}</strong></div>
+            <div><span>Possible condition</span><strong>{{ record.top_condition or 'No direct match' }}</strong></div>
+            {% if record.herbs %}<div><span>Associated herbs</span><strong>{{ record.herbs }}</strong></div>{% endif %}
+          </div>
+          {% endif %}
+
+          <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+            <a href="{{ url_for('history_detail', history_id=record.id) }}" class="btn btn-sm btn-ayur-primary">
+              <i class="bi bi-eye me-1"></i> View Details
+            </a>
+            <form action="{{ url_for('delete_history_record', history_id=record.id) }}" method="POST"
+                  onsubmit="return confirm('Delete this result from your history?');">
+              <button type="submit" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-trash me-1"></i> Delete
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+  {% endfor %}
+</div>
+<p class="small text-muted text-center mt-3">
+  <i class="bi bi-shield-lock me-1"></i> Results are stored in this app's local SQLite database.
+</p>
 {% else %}
-  <div class="ayur-card p-5 text-center bg-white shadow-sm my-4">
-    <i class="bi bi-inbox text-muted fs-1 mb-3 d-block"></i>
-    <h5 class="fw-bold text-dark mb-2">No Search History Available</h5>
-    <p class="text-muted small max-w-500 mx-auto mb-3">
-      You haven't run any symptom checks yet. Start by entering your symptoms in the symptom checker tool.
-    </p>
+<div class="ayur-card p-4 p-md-5 text-center bg-white shadow-sm my-4">
+  <i class="bi bi-inbox text-success fs-1 mb-3 d-block"></i>
+  <h3 class="fw-bold text-dark mb-2">No results yet</h3>
+  <p class="text-muted mb-4">Your symptom checks and plant scans will appear here.</p>
+  <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
     <a href="{{ url_for('symptom_checker') }}" class="btn btn-ayur-primary">
-      <i class="bi bi-heart-pulse me-1"></i> Go to Symptom Checker
+      <i class="bi bi-heart-pulse me-1"></i> Check Symptoms
+    </a>
+    <a href="{{ url_for('plant_identifier_page') }}" class="btn btn-ayur-outline">
+      <i class="bi bi-camera me-1"></i> Scan a Plant
     </a>
   </div>
+</div>
 {% endif %}
 {% endblock %}

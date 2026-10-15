@@ -114,7 +114,8 @@ class AyurHerbTestSuite(unittest.TestCase):
         response = self.client.get("/herb/Tulsi")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Tulsi", response.data)
-        self.assertIn(b"Medicinal Herb Profile", response.data)
+        self.assertIn(b"Herb Information from the Dataset", response.data)
+        self.assertIn(b"Conditions Associated in the Dataset", response.data)
         print("  [PASS] Test 9: Herb detail view loads properly.")
 
     def test_10_conditions_explorer(self):
@@ -141,10 +142,12 @@ class AyurHerbTestSuite(unittest.TestCase):
         print("  [PASS] Test 12: Analytics dashboard renders all plots and KPIs.")
 
     def test_13_history_and_clear(self):
-        """Test GET /history and POST /history/clear."""
+        """Test the combined Results page and POST /history/clear."""
         response = self.client.get("/history")
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Search History Log", response.data)
+        self.assertIn(b"Your Results", response.data)
+        self.assertIn(b"Symptom Checks", response.data)
+        self.assertIn(b"Plant Scans", response.data)
 
         # Clear history
         response_clear = self.client.post("/history/clear", follow_redirects=True)
@@ -162,11 +165,9 @@ class AyurHerbTestSuite(unittest.TestCase):
         print("  [PASS] Test 14: About page loads successfully.")
 
     def test_15_ml_evaluation_page(self):
-        """Test GET /ml-evaluation (Unit V)."""
+        """The standalone ensemble evaluation page is no longer part of the app."""
         response = self.client.get("/ml-evaluation")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Machine Learning Performance", response.data)
-        self.assertIn(b"Random Forest", response.data)
+        self.assertEqual(response.status_code, 404)
         print("  [PASS] Test 15: ML Model Evaluation dashboard renders successfully.")
 
     def test_16_fuzzy_dosage_page(self):

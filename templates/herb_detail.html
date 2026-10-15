@@ -11,7 +11,7 @@
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 border-bottom">
     <div>
       <div class="d-inline-flex align-items-center gap-1 badge bg-success-subtle text-success border border-success-subtle mb-2 px-3 py-1">
-        <i class="bi bi-flower1"></i> Medicinal Herb Profile (Dravya)
+        <i class="bi bi-flower1"></i> Herb Information from the Dataset
       </div>
       <h1 class="fw-bold text-success mb-1">{{ herb.name }}</h1>
       <p class="text-secondary small mb-0">
@@ -27,16 +27,13 @@
 </div>
 
 <div class="row g-4">
-  <!-- Left Column: Core Properties -->
   <div class="col-lg-8">
-    
-    <!-- Associated Conditions Card -->
     <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
       <h5 class="fw-bold text-dark mb-3">
-        <i class="bi bi-journal-medical text-primary me-2"></i> Documented Therapeutic Indications
+        <i class="bi bi-journal-medical text-primary me-2"></i> Conditions Associated in the Dataset
       </h5>
       <p class="small text-secondary mb-3">
-        Conditions where <strong>{{ herb.name }}</strong> is documented as a primary or synergistic herbal constituent:
+        These conditions are associated with this herb in the dataset and are provided for educational reference.
       </p>
       <div class="d-flex flex-wrap gap-2">
         {% for cond in herb.conditions %}
@@ -47,11 +44,11 @@
       </div>
     </div>
 
-    <!-- Formulations & Preparations -->
     <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
       <h5 class="fw-bold text-dark mb-3">
-        <i class="bi bi-cup-hot-fill text-success me-2"></i> Traditional Formulations & Preparations (Kalpana)
+        <i class="bi bi-cup-hot-fill text-success me-2"></i> Formulations Listed in the Dataset
       </h5>
+      <p class="small text-muted">Formulations recorded in the dataset for educational reference.</p>
       <ul class="list-group list-group-flush">
         {% for form in herb.formulations %}
           {% if form %}
@@ -63,10 +60,9 @@
       </ul>
     </div>
 
-    <!-- Sample Records from Dataset -->
     <div class="ayur-card p-4 bg-white shadow-sm">
       <h5 class="fw-bold text-dark mb-3">
-        <i class="bi bi-table text-info me-2"></i> Sample Clinical Use Cases from Dataset
+        <i class="bi bi-table text-info me-2"></i> Sample Records from the Dataset
       </h5>
       <div class="table-responsive">
         <table class="table table-hover align-middle small">
@@ -91,16 +87,12 @@
         </table>
       </div>
     </div>
-
   </div>
 
-  <!-- Right Column: Dosha & Lifestyle Guidelines -->
   <div class="col-lg-4">
-    
-    <!-- Dosha Affiliation -->
     <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
       <h6 class="fw-bold text-dark mb-3">
-        <i class="bi bi-yin-yang text-warning me-1"></i> Dosha Imbalance Modulation
+        <i class="bi bi-yin-yang text-warning me-1"></i> Dosha Information in Dataset
       </h6>
       <div class="d-flex flex-wrap gap-1 mb-2">
         {% for d in herb.doshas %}
@@ -108,11 +100,10 @@
         {% endfor %}
       </div>
       <p class="small text-muted mb-0">
-        In Ayurvedic pharmacology, herbs act to pacify aggravated Dosha combinations (Vata, Pitta, Kapha).
+        This information is shown as recorded in the dataset and is not an individualized medical recommendation.
       </p>
     </div>
 
-    <!-- Diet & Lifestyle Guidelines -->
     {% if herb.diets %}
       <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
         <h6 class="fw-bold text-dark mb-3">
@@ -129,12 +120,12 @@
       </div>
     {% endif %}
 
-    <!-- Yoga Suggestions -->
     {% if herb.yogas %}
       <div class="ayur-card p-4 mb-4 bg-white shadow-sm">
         <h6 class="fw-bold text-dark mb-3">
           <i class="bi bi-person-arms-up text-primary me-1"></i> Yoga & Therapy Guidelines
         </h6>
+        <p class="small text-muted">Guidance recorded in the dataset.</p>
         <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
           {% for y in herb.yogas %}
             <li class="d-flex align-items-start gap-2">
@@ -146,16 +137,14 @@
       </div>
     {% endif %}
 
-    <!-- Safety Note -->
     <div class="p-3 bg-light rounded-3 border">
       <div class="small fw-bold text-dark mb-1">
         <i class="bi bi-shield-exclamation text-warning me-1"></i> Herbal Safety Note
       </div>
       <p class="small text-muted mb-0">
-        Herbal remedies should be taken in appropriate traditional dosages. Consult an Ayurvedic physician if you are pregnant, nursing, or taking prescription medications.
+        Herbal remedies should be taken in appropriate traditional dosages. Consult an Ayurvedic physician if you are pregnant, nursing, or taking prescription medications. This educational information is not a substitute for professional medical advice.
       </p>
     </div>
-
   </div>
 </div>
 {% endblock %}
